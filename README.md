@@ -1,1 +1,1 @@
-# MLPerf research WG efforts, early stage for experimentation only
+# Medical Accuracy WG efforts, early stage for experimentation only

@@ -1,0 +1,7 @@
+numpy==1.19.5
+nibabel==3.2.1
+scikit-image==0.17.2
+torch==1.6.0
+monai==0.5.0
+PyYAML==5.4.1
+tqdm==4.60.0

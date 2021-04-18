@@ -1,0 +1,30 @@
+#  !!python/object: model.Architecture
+model id: 1234567
+benchmark id: 9876
+# when running with mlcube, model root dir should be set in mlcube config
+root_folder: null
+# weights file path, relative to the model root path
+weights: "weights.pth"
+backend: "PyTorch"
+description: "This is a U-Net implementation. More here: http://www.myworkonbrain.com
+  It was trained on private data at X Hospital"
+authors:
+    - name: Your Name
+      email: your_email@host.org
+cite_as: https://doi.org:/...
+license: MIT
+crop: [128, 128, 64]
+
+scenario_1:
+  preprocessing_tranformations:
+    - LoadImaged
+    - AsChannelFirstd
+    - ConvertToMultiChannelBasedOnBratsClassesd
+    - Spacingd
+    - Orientationd
+    - CenterSpatialCropd
+    - NormalizeIntensityd
+    - ToTensord
+  postprocessing_transformations:
+    - Activations
+    - AsDiscrete

@@ -1,0 +1,1 @@
+These are example image cases from the publicly available images of BraTS 2016/2017 as shared on MONAI's implementation: https://github.com/Project-MONAI/tutorials/blob/master/3d_segmentation/brats_segmentation_3d.ipynb

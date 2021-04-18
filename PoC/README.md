@@ -55,8 +55,11 @@ with `yaml` structure:
 - Benchmark: Benchmark description is stored in [MLCube/workspace/parameters/benchmark.yaml](MLCube/workspace/parameters/benchmark.yaml)
 
 ### How to run
+Make sure you follow these [instructions](https://github.com/mlcommons/mlcube) to install MLCube on your virtual environment.
 - Navigate to `platforms` folder and build the MLCube container by executing: `docker build -t mlcommons/poc_benchmark:0.0.1 .` 
 - To execute Scenario 1 of model evaluation run the following command from the `PoC` folder run : 
 `mlcube_docker run --mlcube=. --platform=platforms/docker.yaml --task=run/scenario_1.yaml` 
+- If all is gone well, metrics (i.e. DICE) will be stored in `/Results` folder.
+
 
 Note: Scenario 2 under development

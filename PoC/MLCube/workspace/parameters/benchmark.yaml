@@ -1,0 +1,27 @@
+benchmark name: "MLCommons BraTS"
+benchmark id: 9876
+type: "Segmentation"
+version: "1.0"
+description: "This is the BraTS segmentation benchmark for Medical ML PoC"
+
+random_seed: 123
+
+scenario_1:
+  description: "This scenario runs a pretrained model against each data partition's validation set and reports metrics"
+  output_folder: "scenario_1"
+  metrics:
+    - DiceMetric
+  validation_fraction: 0.2
+
+
+scenario_2:
+  description: "This scenario finetunes a pretrained model on data partition, validates it on each partition's validation set and reports metrics"
+  output_folder: "scenario_2"
+  fine_tuning:
+    number_epochs_for_each_fine_tune: 10
+    percentage_of_data_used_for_each_fine_tune: [0.1, 0.2, 0.4, 0.6, 0.8]
+  metrics:
+    - DiceMetric
+  validation_fraction: 0.2
+
+

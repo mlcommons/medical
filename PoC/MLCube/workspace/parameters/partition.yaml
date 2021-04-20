@@ -1,0 +1,34 @@
+description: "Brain Tumor MRI Segmentation"
+reference: "University of Pennsylvania"
+release: "1.0 01/01/2019"
+tensorImageSize": "3D"
+licence: "CC-BY-SA 4.0"
+modality: "MRI"
+file format: "nifti"
+benchmark id: 9876
+dataset id: 4567
+input channels:
+  0: "FLAIR"
+  1: "T1w"
+  2: "t1gd"
+  3: "T2w"
+labels:
+  0: "background"
+  1: "edema"
+  2: "non-enhancing tumor"
+  3: "enhancing tumour"
+
+#TODO: Add partition stats (e.g. intensity range, median, % labels, etc.)
+# when running with mlcube, data root dir should be set in mlcube config
+root_folder: null
+#TODO: Provide a list of validation sample or set a specific split seed?
+data:
+  - {"image":"imagesTr/BRATS_001.nii.gz","label":"labelsTr/BRATS_001.nii.gz"}
+  - {"image":"imagesTr/BRATS_002.nii.gz","label":"labelsTr/BRATS_002.nii.gz"}
+  - {"image":"imagesTr/BRATS_003.nii.gz","label":"labelsTr/BRATS_003.nii.gz"}
+  - {"image":"imagesTr/BRATS_004.nii.gz","label":"labelsTr/BRATS_004.nii.gz"}
+  - {"image":"imagesTr/BRATS_005.nii.gz","label":"labelsTr/BRATS_005.nii.gz"}
+validation data:
+  - {"image":"imagesTr/BRATS_006.nii.gz","label":"labelsTr/BRATS_006.nii.gz"}
+  - {"image":"imagesTr/BRATS_007.nii.gz","label":"labelsTr/BRATS_007.nii.gz"}
+  - {"image":"imagesTr/BRATS_008.nii.gz","label":"labelsTr/BRATS_008.nii.gz"}

@@ -30,6 +30,10 @@ You can adjust the `parameters.yaml` file to your needs. This file specifies the
 - `id column`: shared column that identifies a data entry. Used for matching a prediction with the corresponding ground-truth labels
 
 ## Run cube on a local machine with Docker runner
+This cube expects at least two extra files inside the workspace for model evaluation: 
+- `predictions.csv`: A csv file containing the model-generated predictions
+- `labels.csv`: A csv file containing the ground-truth labels
+
 ```
 mlcube run --task evaluate # Executes model evaluation
 ```

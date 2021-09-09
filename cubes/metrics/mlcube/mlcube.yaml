@@ -18,5 +18,5 @@ tasks:
   evaluate:
   # Executes a number of metrics specified by the params file
     parameters:
-      inputs: {preds_csv: predictions.csv, labels_csv: data/data.csv, parameters_file: parameters.yaml}
+      inputs: {preds_csv: predictions.csv, labels_csv: labels.csv, parameters_file: parameters.yaml}
       outputs: {output_path: ./}

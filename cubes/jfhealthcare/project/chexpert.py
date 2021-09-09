@@ -123,7 +123,7 @@ def run(args):
     model.load_state_dict(ckpt)
 
     out_csv_path = os.path.join(args.out_dir, "inferences.csv")
-    in_csv_path = os.path.join(args.data_dir, "valid.csv")
+    in_csv_path = os.path.join(args.data_dir, "data.csv")
 
     dataloader_test = DataLoader(
         ImageDataset(in_csv_path, cfg, args.data_dir, mode="test"),

@@ -1,6 +1,6 @@
 
 # Gaetandi's Model Cube
-This cube adapts github user `gaetandi`'s model into a cube. You can find the original 
+This cube adapts github user `gaetandi`'s model into a cube. You can find the original implementation [here](https://github.com/gaetandi/cheXpert)
 
 ## Project Setup
 ```
@@ -22,7 +22,7 @@ This folder contains all the required files to build the cube. Therefore, to get
 ```
 git clone https://github.com/mlcommons/medical.git && cd ./cubes
 git fetch origin pull/XX/head:cubes && git checkout cubes
-cd ./cubes/chexpert_prep
+cd ./cubes/gaetandi
 ```
 
 ## Get the data

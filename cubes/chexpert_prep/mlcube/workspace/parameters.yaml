@@ -1,0 +1,19 @@
+# [Input parameters]
+input_datafile: data1.csv
+
+output_datafile: data.csv
+output_imagepath: images
+output_statsfile: statistics.yaml
+labels:
+ - Atelectasis
+ - Cardiomegaly
+ - Consolidation
+ - Edema
+ - Enlarged Cardiomediastinum
+ - Fracture
+ - Lung Lesion
+ - Lung Opacity
+ - No Finding
+ - Pleural Effusion
+ - Pleural Other
+ - Support Devices

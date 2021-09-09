@@ -26,6 +26,3 @@ tasks:
     parameters:
       inputs: {data_path: data/, parameters_file: parameters.yaml}
       outputs: {out_path: ./}
-  cleanup:
-    parameters:
-      inputs: {parameters_file: parameters.yaml, output_path: data/}

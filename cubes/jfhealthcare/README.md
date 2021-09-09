@@ -18,7 +18,7 @@ rm -fr mlbox
 
 ## Get the cube
 ```
-git clone https://github.com/mlcommons/medical.git && cd ./cubes
+git clone https://github.com/mlcommons/medical.git && cd ./medical
 git fetch origin pull/XX/head:cubes && git checkout cubes
 cd ./cubes/jfhealthcare
 ```

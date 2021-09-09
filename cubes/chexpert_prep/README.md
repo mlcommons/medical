@@ -22,7 +22,7 @@ rm -fr mlbox
 ## Get the cube
 This folder contains all the required files to build the cube. Therefore, to get the cube, run this:
 ```
-git clone https://github.com/mlcommons/medical.git && cd ./cubes
+git clone https://github.com/mlcommons/medical.git && cd ./medical
 git fetch origin pull/XX/head:cubes && git checkout cubes
 cd ./cubes/chexpert_prep
 ```

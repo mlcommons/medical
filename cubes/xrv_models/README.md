@@ -20,7 +20,7 @@ rm -fr mlbox
 ```
 git clone https://github.com/mlcommons/medical.git && cd ./medical
 git fetch origin pull/XX/head:cubes && git checkout cubes
-cd ./cubes/xrv_models
+cd ./cubes/xrv_models/mlcube
 ```
 
 ## Get the data

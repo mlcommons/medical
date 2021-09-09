@@ -35,7 +35,7 @@ mlcube run --task infer # Runs inference on the prepared dataset
 ```
 Parameters defined in `mlcube.yaml` can be overridden using: `param=input`, example:
 ```
-mlcube run --task preprocess data_path=path_to_custom_dir
+mlcube run --task download_model data_path=path_to_custom_dir
 ```
 We are targeting pull-type installation, so MLCubes should be available on docker hub. If not, try this:
 

@@ -1,5 +1,5 @@
 # MLCube: JFHealthCare's model cube
-This cube adapts JFHealthCare's model into a cube. YOo can find the original implementation [here](https://github.com/jfhealthcare/Chexpert). 
+This cube adapts JFHealthCare's model into a cube. You can find the original implementation [here](https://github.com/jfhealthcare/Chexpert). 
 
 ## Project Setup
 ```

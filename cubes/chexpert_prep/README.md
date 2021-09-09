@@ -42,8 +42,7 @@ Unzip and place the CheXpert-v1.0-small folder inside `mlcube/workspace` folder.
 │       └── parameters.yaml
 └── project
 ```
-Run Chexpert MLCube on a local machine with Docker runner
-# Run Chexpert training tasks: download data, download the model and generate predictions
+# Run cube on a local machine with Docker runner
 ```
 mlcube run --task preprocess # Creates new version of the data into /data
 mlcube run --task sanity_check # checks that the output format is okay

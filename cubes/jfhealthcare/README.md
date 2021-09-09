@@ -26,8 +26,7 @@ cd ./cubes/jfhealthcare
 ## Get the data
 The dataset should be retrieved and prepared following the CheXpert Data Preparation Cube instructions. Then, copy the `data` folder from that cube's workspace into this one. Alternatively, you can run all of this cube's tasks pointing to the data preparation cube's workspace by adding the `--workspace=<path_to_workspace>` CLI argument.
 
-## Run Chexpert MLCube on a local machine with Docker runner
-
+## Run cube on a local machine with Docker runner
 ```
 mlcube run --task download_model # Downloads model's weights and additional parameters
 mlcube run --task infer # Runs inference on the prepared dataset

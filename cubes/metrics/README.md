@@ -23,20 +23,21 @@ git fetch origin pull/XX/head:cubes && git checkout cubes
 cd ./cubes/metrics
 ```
 
-## Get the data
-The dataset should be retrieved and prepared following the CheXpert Data Preparation Cube instructions. Then, copy the `data` folder from that cube's workspace into this one. Alternatively, you can run all of this cube's tasks pointing to the data preparation cube's workspace by adding the `--workspace=<path_to_workspace>` CLI argument.
+## Cube configuraiton
+You can adjust the `parameters.yaml` file to your needs. This file specifies the following key-value pairs used for model evaluation:
+- `metrics`: a list of metrics to be used for evaluation
+- `label columns`: a list of columns that are shared by both the ground-truth and predictions files. This are the columns that the metrics will be executed on.
+- `id column`: shared column that identifies a data entry. Used for matching a prediction with the corresponding ground-truth labels
 
 ## Run cube on a local machine with Docker runner
-
 ```
-mlcube run --task download_model # Downloads model's weights and additional parameters
-mlcube run --task infer # Runs inference on the prepared dataset
+mlcube run --task evaluate # Executes model evaluation
 ```
 
 Parameters defined in `mlcube.yaml` can be overridden using: `param=input`, example:
 
 ```
-mlcube run --task download_model data_dir=path_to_custom_dir
+mlcube run --task evaluate data_dir=path_to_custom_dir
 ```
 
 We are targeting pull-type installation, so MLCubes should be available on docker hub. If not, try this:

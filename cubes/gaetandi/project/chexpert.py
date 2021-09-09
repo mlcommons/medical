@@ -115,7 +115,6 @@ def main():
     params["checkpoint"] = os.path.join(args.model_path, "model.pth.tar")
     runner = CheXpertRunner(params)
     preds, names = runner.predict()
-    print(params["class_names"])
     preds_df = pd.DataFrame(data=preds.tolist(), columns=params["class_names"])
     preds_df["Path"] = names
     out_path = os.path.join(args.out_path, params["preds_file"])

@@ -74,7 +74,7 @@ if __name__ == "__main__":
     with open(args.params_file, "r") as f:
         params = yaml.full_load(f)
 
-    stats_path = os.path.join(args.out_path, params["output_statsfile"])
+    stats_path = args.out_path
 
     checker = Stats(args.data_path, stats_path, params)
     checker.run()

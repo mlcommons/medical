@@ -6,7 +6,7 @@ import argparse
 
 
 class Preprocessor:
-    def __init__(self, data_path, params_file, output_path):
+    def __init__(self, data_path, labels_path, params_file, output_path):
         with open(params_file, "r") as f:
             self.params = yaml.full_load(f)
         self.data_path = data_path
@@ -54,6 +54,13 @@ if __name__ == "__main__":
         help="Location of chexpert dataset",
     )
     parser.add_argument(
+        "--labels_path",
+        "--labels-path",
+        type=str,
+        required=True,
+        help="chexpert labels file. csv expected",
+    )
+    parser.add_argument(
         "--params_file",
         "--params-file",
         type=str,
@@ -68,6 +75,7 @@ if __name__ == "__main__":
         help="Location to store the prepared data",
     )
     args = parser.parse_args()
-    preprocessor = Preprocessor(args.data_path, args.params_file, args.output_path)
+    preprocessor = Preprocessor(
+        args.data_path, args.labels_path, args.params_file, args.output_path
+    )
     preprocessor.run()
-

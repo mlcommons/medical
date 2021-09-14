@@ -20,14 +20,16 @@ def exec_python(cmd: str) -> None:
 class PreprocessTask(object):
     """
     Task for preprocessing the data
-    
+
     Arguments:
     - data_path: data location.
     """
 
     @staticmethod
-    def run(data_path: str, params_file: str, output_path: str) -> None:
-        cmd = f"python3 preprocess.py --data_path={data_path} --params_file={params_file} --output_path={output_path}"
+    def run(
+        data_path: str, labels_path: str, params_file: str, output_path: str
+    ) -> None:
+        cmd = f"python3 preprocess.py --data_path={data_path} --labels_path={labels_path} --params_file={params_file} --output_path={output_path}"
         exec_python(cmd)
 
 
@@ -81,13 +83,14 @@ class CleanupTask(object):
         os.remove(params_file)
 
 
-@app.command("preprocess")
-def preprocess(
+@app.command("prepare")
+def prepare(
     data_path: str = typer.Option(..., "--data_path"),
+    labels_path: str = typer.Option(..., "--labels_path"),
     parameters_file: str = typer.Option(..., "--parameters_file"),
     output_path: str = typer.Option(..., "--output_path"),
 ):
-    PreprocessTask.run(data_path, parameters_file, output_path)
+    PreprocessTask.run(data_path, labels_path, parameters_file, output_path)
 
 
 @app.command("sanity_check")

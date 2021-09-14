@@ -17,17 +17,22 @@ def exec_python(cmd: str) -> None:
     process.wait()
 
 
-class PreprocessTask(object):
+class PrepareTask(object):
     """
-    Task for preprocessing the data
-    
+    Task for preparing the data
+
     Arguments:
     - data_path: data location.
+    - labels_path: csv file containing the labels of the data
+    - params_file: csv file with additional parameters
+    - output_path: location to store prepared data
     """
 
     @staticmethod
-    def run(img_path: str, csv_path: str, params_file: str, output_path: str) -> None:
-        cmd = f"python3 preprocess.py --img_path={img_path} --csv_path={csv_path} --params_file={params_file} --output_path={output_path}"
+    def run(
+        data_path: str, labels_path: str, params_file: str, output_path: str
+    ) -> None:
+        cmd = f"python3 preprocess.py --img_path={data_path} --csv_path={labels_path} --params_file={params_file} --output_path={output_path}"
         exec_python(cmd)
 
 
@@ -81,14 +86,14 @@ class CleanupTask(object):
         os.remove(params_file)
 
 
-@app.command("preprocess")
-def preprocess(
-    img_path: str = typer.Option(..., "--img_path"),
-    csv_path: str = typer.Option(..., "--csv_path"),
+@app.command("prepare")
+def prepare(
+    data_path: str = typer.Option(..., "--data_path"),
+    labels_path: str = typer.Option(..., "--labels_path"),
     parameters_file: str = typer.Option(..., "--parameters_file"),
     output_path: str = typer.Option(..., "--output_path"),
 ):
-    PreprocessTask.run(img_path, csv_path, parameters_file, output_path)
+    PrepareTask.run(data_path, labels_path, parameters_file, output_path)
 
 
 @app.command("sanity_check")

@@ -18,9 +18,9 @@ tasks:
   download_model:
   # Download model files
     parameters:
-      outputs: {model_dir: model/}
+      outputs: {model_path: model/}
   infer:
   # predict on data
     parameters:
-      inputs: {data_dir: data/, model_dir: model/}
-      outputs: {log_dir: inference_logs/, out_dir: ./}
+      inputs: {data_path: data/, model_path: model/}
+      outputs: {out_path: {type: file, default: predictions.csv}}

@@ -30,29 +30,33 @@ class Task(str, Enum):
     Infer = "infer"
 
 
-def create_directory(path: str) -> None:
+def create_pathectory(path: str) -> None:
     if not os.path.exists(path):
         os.makedirs(path, exist_ok=True)
 
 
-def infer(task_args: List[str]) -> None:
+def infer() -> None:
     """Task: infer
 
     Input parameters:
-        --data_dir, --ckpt_dir, --out_dir
+        --data_path, --ckpt_path, --out_path
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--data_dir", "--data-dir", type=str, default=None, help="Dataset path."
+        "--data_path", "--data-dir", type=str, default=None, help="Dataset path."
     )
     parser.add_argument(
-        "--model_dir", "--model-dir", type=str, default=None, help="Model location."
+        "--model_path", "--model-dir", type=str, default=None, help="Model location."
     )
     parser.add_argument(
-        "--out_dir", "--out-dir", type=str, default=None, help="Model output directory."
+        "--out_path",
+        "--out-dir",
+        type=str,
+        default=None,
+        help="Model output directory.",
     )
 
-    args = parser.parse_args(args=task_args)
+    args = parser.parse_args()
     run(args)
 
 
@@ -111,8 +115,8 @@ def test_epoch(cfg, model, device, dataloader, out_csv_path):
 
 
 def run(args):
-    ckpt_path = os.path.join(args.model_dir, "model.pth")
-    config_path = os.path.join(args.model_dir, "config.json")
+    ckpt_path = os.path.join(args.model_path, "model.pth")
+    config_path = os.path.join(args.model_path, "config.json")
     with open(config_path) as f:
         cfg = edict(json.load(f))
 
@@ -122,11 +126,11 @@ def run(args):
     model = Classifier(cfg).to(device).eval()
     model.load_state_dict(ckpt)
 
-    out_csv_path = os.path.join(args.out_dir, "inferences.csv")
-    in_csv_path = os.path.join(args.data_dir, "data.csv")
+    out_csv_path = os.path.join(args.out_path)
+    in_csv_path = os.path.join(args.data_path, "data.csv")
 
     dataloader_test = DataLoader(
-        ImageDataset(in_csv_path, cfg, args.data_dir, mode="test"),
+        ImageDataset(in_csv_path, cfg, args.data_path, mode="test"),
         batch_size=cfg.dev_batch_size,
         drop_last=False,
         shuffle=False,
@@ -135,44 +139,5 @@ def run(args):
     test_epoch(cfg, model, device, dataloader_test, out_csv_path)
 
 
-def main():
-    """
-    chexpert.py task task_specific_parameters...
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--log_dir", "--log-dir", type=str, required=True, help="Logging directory."
-    )
-    mlcube_args, task_args = parser.parse_known_args()
-
-    os.makedirs(mlcube_args.log_dir, exist_ok=True)
-    logger_config = {
-        "version": 1,
-        "disable_existing_loggers": True,
-        "formatters": {
-            "standard": {
-                "format": "%(asctime)s - %(name)s - %(threadName)s - %(levelname)s - %(message)s"
-            },
-        },
-        "handlers": {
-            "file_handler": {
-                "class": "logging.FileHandler",
-                "level": "INFO",
-                "formatter": "standard",
-                "filename": os.path.join(
-                    mlcube_args.log_dir, f"mlcube_chexpert_infer.log"
-                ),
-            }
-        },
-        "loggers": {
-            "": {"level": "INFO", "handlers": ["file_handler"]},
-            "__main__": {"level": "NOTSET", "propagate": "yes"},
-            "tensorflow": {"level": "NOTSET", "propagate": "yes"},
-        },
-    }
-    logging.config.dictConfig(logger_config)
-    infer(task_args)
-
-
 if __name__ == "__main__":
-    main()
+    infer()

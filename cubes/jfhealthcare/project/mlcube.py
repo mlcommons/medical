@@ -9,70 +9,80 @@ from pathlib import Path
 
 app = typer.Typer()
 
+
 class DownloadModelTask(object):
     """
     Downloads model config and checkpoint files
     Arguments:
-    - model_dir [str]: path for storing the model.
+    - model_path [str]: path for storing the model.
     """
+
     @staticmethod
-    def run(model_dir: str) -> None:
+    def run(model_path: str) -> None:
 
         env = os.environ.copy()
-        env.update({
-            'MODEL_DIR': model_dir,
-        })
+        env.update(
+            {"MODEL_DIR": model_path,}
+        )
 
         process = subprocess.Popen("./download_model.sh", cwd=".", env=env)
         process.wait()
+
 
 class PreprocessTask(object):
     """
     Task for preprocessing the data
     
     Arguments:
-    - data_dir: data location.
+    - data_path: data location.
     """
+
     @staticmethod
-    def run(data_dir: str) -> None:
-        cmd = f"python3.7 preprocess.py --data_dir={data_dir}"
+    def run(data_path: str) -> None:
+        cmd = f"python3.7 preprocess.py --data_path={data_path}"
         splitted_cmd = cmd.split()
 
         process = subprocess.Popen(splitted_cmd, cwd=".")
         process.wait()
+
 
 class InferTask(object):
     """
     Inference task for generating predictions on the CheXpert dataset.
 
     Arguments:
-    - log_dir [str]: logging location.
-    - data_dir [str]: data location.
-    - model_dir [str]: model location.
-    - out_dir [str]: location for storing the predictions.
+    - data_path [str]: data location.
+    - model_path [str]: model location.
+    - out_path [str]: location for storing the predictions.
     """
+
     @staticmethod
-    def run(log_dir: str, data_dir: str, model_dir: str, out_dir) -> None:
-        cmd = f"python3.7 chexpert.py --log_dir={log_dir} --data_dir={data_dir} --model_dir={model_dir} --out_dir={out_dir}"
+    def run(data_path: str, model_path: str, out_path) -> None:
+        cmd = f"python3.7 chexpert.py --data_path={data_path} --model_path={model_path} --out_path={out_path}"
         splitted_cmd = cmd.split()
 
         process = subprocess.Popen(splitted_cmd, cwd=".")
         process.wait()
 
+
 @app.command("download_model")
-def download_model(model_dir: str = typer.Option(..., '--model_dir')):
-    DownloadModelTask.run(model_dir)
+def download_model(model_path: str = typer.Option(..., "--model_path")):
+    DownloadModelTask.run(model_path)
+
 
 @app.command("preprocess")
-def preprocess(data_dir: str = typer.Option(..., '--data_dir')):
-    PreprocessTask.run(data_dir)
+def preprocess(data_path: str = typer.Option(..., "--data_path")):
+    PreprocessTask.run(data_path)
+
 
 @app.command("infer")
-def infer(log_dir: str = typer.Option(..., '--log_dir'),
-          data_dir: str = typer.Option(..., '--data_dir'),
-          model_dir: str = typer.Option(..., '--model_dir'),
-          out_dir: str = typer.Option(..., '--out_dir')):
-    InferTask.run(log_dir, data_dir, model_dir, out_dir)
+def infer(
+    data_path: str = typer.Option(..., "--data_path"),
+    model_path: str = typer.Option(..., "--model_path"),
+    out_path: str = typer.Option(..., "--out_path"),
+):
+    InferTask.run(data_path, model_path, out_path)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app()

@@ -15,9 +15,9 @@ docker:
   build_file: "Dockerfile"
 
 tasks:
-  preprocess:
+  prepare:
     parameters:
-      inputs: {img_path: NIH/images/, csv_path: NIH/Data_Entry_2017_v2020.csv, parameters_file: parameters.yaml}
+      inputs: {data_path: NIH/images/, labels_path: NIH/Data_Entry_2017_v2020.csv, parameters_file: parameters.yaml}
       outputs: {output_path: data/}
   sanity_check:
     parameters:

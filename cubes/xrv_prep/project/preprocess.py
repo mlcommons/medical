@@ -65,7 +65,7 @@ class Preprocessor:
             for i in range(n_rows):
                 try:
                     row = data[i]
-                except FileNotFoundError:
+                except FileNotFoundError as e:
                     pbar.update(1)
                     continue
 

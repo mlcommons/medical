@@ -117,7 +117,7 @@ def main():
     preds, names = runner.predict()
     preds_df = pd.DataFrame(data=preds.tolist(), columns=params["class_names"])
     preds_df["Path"] = names
-    out_path = os.path.join(args.out_path, params["preds_file"])
+    out_path = os.path.join(args.out_path)
     preds_df.to_csv(out_path, index=False)
 
 

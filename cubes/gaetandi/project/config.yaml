@@ -1,6 +1,5 @@
 # Dataset parameters:
 data_file: "data.csv"
-preds_file: "predictions.csv"
 
 # Neural network parameters:
 nnClassCount: 14  # dimension of the output

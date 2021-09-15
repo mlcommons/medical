@@ -105,7 +105,7 @@ def sanity_check(
 def sanity_check(
     data_path: str = typer.Option(..., "--data_path"),
     parameters_file: str = typer.Option(..., "--parameters_file"),
-    out_path: str = typer.Option(..., "--out_path"),
+    out_path: str = typer.Option(..., "--output_path"),
 ):
     StatisticsTask.run(data_path, parameters_file, out_path)
 

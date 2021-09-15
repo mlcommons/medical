@@ -32,4 +32,5 @@ def execute(
 
 
 if __name__ == "__main__":
+    typer.echo("MedPerf 0.0.0")
     app()

@@ -23,7 +23,6 @@ class DataPreparation:
         out_path, out_datapath = generate_tmp_datapath()
         server = Server(config["server"])
         init_storage()
-        typer.echo("MedPerf 0.0.0")
         benchmark = server.get_benchmark(benchmark_uid)
         typer.echo(f"Benchmark: {benchmark['name']}")
 

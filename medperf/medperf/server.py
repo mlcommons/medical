@@ -1,9 +1,10 @@
 import requests
 from pathlib import Path
 import os
+from shutil import copyfile
 
 from .config import config
-from .utils import pretty_error, get_file_sha1, cleanup
+from .utils import pretty_error, get_file_sha1, cleanup, cube_path
 
 
 class Server:
@@ -37,28 +38,42 @@ class Server:
         if res.status_code != 200:
             pretty_error("The specified cube doesn't exist")
 
-        tmp_cube_path = os.path.join(config["tmp_storage"], uid)
-        if not os.path.isdir(tmp_cube_path):
-            os.mkdir(tmp_cube_path)
-        tmp_cube_manifest = os.path.join(tmp_cube_path, "mlcube.yaml")
-        open(tmp_cube_manifest, "wb+").write(res.content)
-        return tmp_cube_manifest
+        c_path = self.__create_cube_fs(uid)
+        cube_manifest = os.path.join(c_path, "mlcube.yaml")
+        open(cube_manifest, "wb+").write(res.content)
+        return cube_manifest
 
-    def get_cube_params(self, cube_uid: str, workspace_path: str):
+    def __create_cube_fs(self, uid: str):
+        c_path = cube_path(uid)
+        if not os.path.isdir(c_path):
+            os.mkdir(c_path)
+            ws_path = os.path.join(c_path, "workspace")
+            os.mkdir(ws_path)
+        return c_path
+
+    def get_cube_params(self, cube_uid: str):
         res = requests.get(f"{self.server_url}/cubes/{cube_uid}/parameters-file")
         if res.status_code != 200:
             pretty_error("the specified cube doesn't exist")
 
-        params_filepath = os.path.join(workspace_path, "parameters.yaml")
+        c_path = cube_path(cube_uid)
+        params_filepath = os.path.join(c_path, "workspace/parameters.yaml")
         open(params_filepath, "wb+").write(res.content)
         return params_filepath
 
-    def upload_dataset(self, dataset_reg_path):
-        parent_path = str(Path(dataset_reg_path).parent)
+    def upload_dataset(self, parent_path, filename="registration-info.yaml"):
+        """Uploads registration data to server, under the sha name of the file
+
+        Args:
+            parent_path ([str]): path to the registration data
+            filename (str, optional): name of the registration file. Defaults to "registration-info.yaml".
+        """
+        dataset_reg_path = os.path.join(parent_path, filename)
         reg_sha = get_file_sha1(dataset_reg_path)
         new_name = os.path.join(parent_path, reg_sha + ".yaml")
-        os.rename(dataset_reg_path, new_name)
+        copyfile(dataset_reg_path, new_name)
         files = {"file": open(new_name, "rb")}
         res = requests.post(f"{self.server_url}/datasets", files=files)
+        os.remove(new_name)
         if res.status_code != 200:
             pretty_error("Could not registrate the dataset")

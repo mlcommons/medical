@@ -18,5 +18,5 @@ tasks:
   infer:
   # predict on data
     parameters:
-      inputs: {data_dir: data/, parameters_file: parameters.yaml}
-      outputs: {out_dir: ./}
+      inputs: {data_path: data/, parameters_file: parameters.yaml}
+      outputs: {output_path: {type: file, default: predictions.csv}}

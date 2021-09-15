@@ -15,14 +15,14 @@ class InferTask(object):
     Task for generating inferences on data
 
     Arguments:
-    - data_dir [str]: location of prepared data
+    - data_path [str]: location of prepared data
     - params_file [str]: file containing parameters for inference
-    - out_dir [str]: location for storing inferences
+    - out_path [str]: location for storing inferences
     """
 
     @staticmethod
-    def run(data_dir: str, params_file: str, out_dir: str) -> None:
-        cmd = f"python3 model.py --data_dir={data_dir} --params_file={params_file} --out_dir={out_dir}"
+    def run(data_path: str, params_file: str, out_path: str) -> None:
+        cmd = f"python3 model.py --data_path={data_path} --params_file={params_file} --out_path={out_path}"
         exec_python(cmd)
 
 
@@ -33,11 +33,11 @@ def hotfix():
 
 @app.command("infer")
 def infer(
-    data_dir: str = typer.Option(..., "--data_dir"),
+    data_path: str = typer.Option(..., "--data_path"),
     params_file: str = typer.Option(..., "--parameters_file"),
-    out_dir: str = typer.Option(..., "--out_dir"),
+    out_path: str = typer.Option(..., "--output_path"),
 ):
-    InferTask.run(data_dir, params_file, out_dir)
+    InferTask.run(data_path, params_file, out_path)
 
 
 if __name__ == "__main__":

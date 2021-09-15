@@ -23,4 +23,4 @@ tasks:
   # predict on data
     parameters:
       inputs: {data_path: data/, model_path: model/}
-      outputs: {out_path: {type: file, default: predictions.csv}}
+      outputs: {output_path: {type: file, default: predictions.csv}}

@@ -79,7 +79,7 @@ def preprocess(data_path: str = typer.Option(..., "--data_path")):
 def infer(
     data_path: str = typer.Option(..., "--data_path"),
     model_path: str = typer.Option(..., "--model_path"),
-    out_path: str = typer.Option(..., "--out_path"),
+    out_path: str = typer.Option(..., "--output_path"),
 ):
     InferTask.run(data_path, model_path, out_path)
 

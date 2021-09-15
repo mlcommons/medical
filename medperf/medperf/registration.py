@@ -40,6 +40,7 @@ class Registration:
             "location": self.location,
             "owner": self.owner,
             "split_seed": self.reg_time,
+            "preparation_cube_uid": self.cube.uid,
             "metadata": {},
         }
         registration.update(self.stats)

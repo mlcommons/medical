@@ -3,26 +3,94 @@ import yaml
 import os
 from pathlib import Path
 
+from .server import Server
+from .config import config
+
+from .utils import get_file_sha1, untar_additional
+
 
 class Cube(object):
-    def __init__(self, uid, cube_path, params_path):
+    def __init__(
+        self,
+        uid: str,
+        meta: dict,
+        cube_path: str,
+        params_path: str = None,
+        additional_hash: str = None,
+    ):
+        """Creates a Cube instance
+
+        Args:
+            uid (str): UID of the cube.
+            meta (dict): Dict for additional information regarding the cube.
+            cube_path (str): path to the mlcube.yaml file associated with this cube.
+            params_path (str, optional): Location of the parameters.yaml file. if exists. Defaults to None.
+            additional_hash (str, optional): Hash of the tarball file, if exists. Defaults to None.
+        """
         self.uid = uid
+        self.meta = meta
         self.cube_path = cube_path
         self.params_path = params_path
+        self.additional_hash = additional_hash
 
-    def run(self, **kwargs):
-        cmd = f"mlcube run --mlcube={self.cube_path}"
+    @classmethod
+    def get(cls, cube_uid: str) -> "Cube":
+        """Retrieves and creates a Cube instance from the server
+
+        Args:
+            cube_uid (str): UID of the cube.
+
+        Returns:
+            Cube : a Cube instance with the retrieved data
+        """
+        server = Server(config["server"])
+        meta = server.get_cube_metadata(cube_uid)
+        cube_path = server.get_cube(meta["url"], cube_uid)
+        params_path = None
+        additional_path = None
+        additional_hash = None
+        if "parameters_url" in meta:
+            url = meta["parameters_url"]
+            params_path = server.get_cube_params(url, cube_uid)
+        if "additional_files_url" in meta:
+            url = meta["additional_files_url"]
+            additional_path = server.get_cube_additional(url, cube_uid)
+            additional_hash = get_file_sha1(additional_path)
+            untar_additional(additional_path)
+
+        return cls(cube_uid, meta, cube_path, params_path, additional_hash)
+
+    def is_valid(self) -> bool:
+        """Checks the validity of the cube and related files through hash checking.
+
+        Returns:
+            bool: Wether the cube and related files match the expeced hashes
+        """
+        valid_cube = get_file_sha1(self.cube_path) == self.meta["sha1"]
+        has_additional = "additional_files_url" in self.meta
+        if has_additional:
+            valid_additional = (
+                self.additional_hash == self.meta["additional_files_sha1"]
+            )
+        else:
+            valid_additional = True
+        return valid_cube and valid_additional
+
+    def run(self, task: str, **kwargs):
+        """Executes a given task on the cube instance
+
+        Args:
+            task (str): task to run
+            kwargs (dict): additional arguments that are passed directly to the mlcube command
+        """
+        cmd = f"mlcube run --mlcube={self.cube_path} --task={task}"
         for k, v in kwargs.items():
-            if k == "task":
-                cmd_arg = f"--{k}={v}"
-            else:
-                cmd_arg = f"{k}={v}"
+            cmd_arg = f"{k}={v}"
             cmd = " ".join([cmd, cmd_arg])
 
         splitted_cmd = cmd.split()
 
         subprocess.check_call(splitted_cmd, cwd=".")
-        # process.wait()
 
     def get_default_output(self, task: str, out_key: str, param_key: str = None) -> str:
         """Returns the output parameter specified in the mlcube.yaml file
@@ -30,7 +98,7 @@ class Cube(object):
         Args:
             task (str): the task of interest
             out_key (str): key used to identify the desired output in the yaml file
-            param_key (str): OPTIONAL. key inside the parameters file that completes the output path
+            param_key (str): key inside the parameters file that completes the output path. Defaults to None.
 
         Returns:
             str: the path as specified in the mlcube.yaml file for the desired

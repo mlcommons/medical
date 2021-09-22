@@ -11,7 +11,7 @@ setup(
     name="medperf",
     version="0.0.0",
     description="CLI Tool for federated benchmarking on medical private data",
-    url="https://github.com/aristizabal95/medperf",
+    url="https://github.com/mlcommons/medical",
     author="MLCommons",
     license="Apache 2.0",
     packages=["medperf"],

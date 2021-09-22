@@ -1,7 +1,0 @@
-easydict==1.9
-PyYAML
-typer
-torch
-torchvision
-pandas
-tqdm

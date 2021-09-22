@@ -1,8 +1,0 @@
-output_datafile: data.csv
-output_imagepath: images
-output_statsfile: statistics.yaml
-labels:
- - Atelectasis
- - Cardiomegaly
- - Consolidation
- - Edema

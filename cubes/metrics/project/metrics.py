@@ -1,13 +1,21 @@
 import argparse
 import yaml
 import pandas as pd
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, f1_score
 
 
 class AUC:
     @staticmethod
     def run(labels, preds):
         results = roc_auc_score(labels, preds, average=None)
+        return results.tolist()
+
+
+class F1:
+    @staticmethod
+    def run(labels, preds):
+        preds = preds > 0.5
+        results = f1_score(labels, preds, average=None)
         return results.tolist()
 
 
@@ -56,6 +64,7 @@ def main():
 
     available_metrics = {
         "AUC": AUC,
+        "F1": F1,
     }
     results = {}
     cols = list(labels.columns)

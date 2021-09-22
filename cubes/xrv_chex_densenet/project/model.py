@@ -8,24 +8,26 @@ import yaml
 from tqdm import tqdm
 
 from data.dataset import XRVDataset
+import models
+
+xrv.models = models
 
 app = typer.Typer()
 
 
 class XRVInference(object):
     @staticmethod
-    def run(data_path, params_file, out_path):
+    def run(data_path, params_file, weights, out_path):
         with open(params_file, "r") as f:
             params = yaml.full_load(f)
 
         densenet = xrv.models.DenseNet
-        out_filepath = os.path.join(out_path, params["out_filename"])
         available_models = set(
             ["all", "rsna", "nih", "pc", "chex", "mimic_nb", "mimic_ch"]
         )
 
         if params["model"] in available_models:
-            model = densenet(weights=params["model"])
+            model = densenet(weights=params["model"], weights_filename_local=weights)
         else:
             print("The specified model couldn't be found")
             exit()
@@ -39,16 +41,17 @@ class XRVInference(object):
 
         pred_cols = ["Path"] + model.pathologies
         preds_df = pd.DataFrame(data=preds, columns=pred_cols)
-        preds_df.to_csv(out_filepath, index=False)
+        preds_df.to_csv(out_path, index=False)
 
 
 @app.command("infer")
 def infer(
-    data_dir: str = typer.Option(..., "--data_dir"),
+    data_path: str = typer.Option(..., "--data_path"),
     params_file: str = typer.Option(..., "--params_file"),
-    out_dir: str = typer.Option(..., "--out_dir"),
+    weights: str = typer.Option(..., "--weights"),
+    out_path: str = typer.Option(..., "--out_path"),
 ):
-    XRVInference.run(data_dir, params_file, out_dir)
+    XRVInference.run(data_path, params_file, weights, out_path)
 
 
 if __name__ == "__main__":

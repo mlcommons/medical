@@ -32,8 +32,7 @@ def evaluate(
     parameters_file: str = typer.Option(..., "--parameters_file"),
     output_path: str = typer.Option(..., "--output_path"),
 ):
-    output_file = os.path.join(output_path, "results.yaml")
-    EvaluateTask.run(labels_csv, preds_csv, parameters_file, output_file)
+    EvaluateTask.run(labels_csv, preds_csv, parameters_file, output_path)
 
 
 @app.command("test")

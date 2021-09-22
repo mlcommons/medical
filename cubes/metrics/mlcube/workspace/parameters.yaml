@@ -3,11 +3,10 @@ metrics:
   - AUC
 label columns:
   # Label columns that are going to be evaluated
-  - Cardiomegaly
-  - Edema
-  - Consolidation
-  - Atelectasis
-  - Pleural Effusion
+ - Atelectasis
+ - Cardiomegaly
+ - Consolidation
+ - Edema
 
 # Common identifier column for labels and predictions
 id column: Path

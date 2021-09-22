@@ -19,4 +19,4 @@ tasks:
   # Executes a number of metrics specified by the params file
     parameters:
       inputs: {preds_csv: predictions.csv, labels_csv: labels.csv, parameters_file: parameters.yaml}
-      outputs: {output_path: ./}
+      outputs: {output_path: {type: "file", default: "results.yaml"}}

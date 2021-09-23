@@ -10,7 +10,7 @@ import typer
 import yaml
 from pathlib import Path
 
-from .cube import Cube
+from medperf.entities import Cube
 
 
 def get_file_sha1(path: str) -> str:

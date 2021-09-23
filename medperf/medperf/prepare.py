@@ -2,9 +2,9 @@ import os
 import typer
 from yaspin import yaspin
 
-from .benchmark import Benchmark
-from .cube import Cube
-from .registration import Registration
+from medperf.entities import Benchmark
+from medperf.entities import Cube
+from medperf.entities import Registration
 from .utils import (
     check_cube_validity,
     generate_tmp_datapath,
@@ -45,6 +45,7 @@ class DataPreparation:
                 task="prepare",
                 data_path=data_path,
                 labels_path=labels_path,
+                # TODO: no need to do all the tmp output logic. Can be moved
                 output_path=out_datapath,
             )
             sp.write("> Cube execution complete")

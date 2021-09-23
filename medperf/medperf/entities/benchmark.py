@@ -1,5 +1,5 @@
-from .config import config
-from .server import Server
+from medperf.config import config
+from medperf.entities import Server
 
 
 class Benchmark:

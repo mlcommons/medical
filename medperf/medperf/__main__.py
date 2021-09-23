@@ -1,8 +1,8 @@
 import typer
 
-from .prepare import DataPreparation
-from .benchmark_execution import BenchmarkExecution
-from .dataset import Dataset
+from medperf import DataPreparation
+from medperf import BenchmarkExecution
+from medperf.entities import Dataset
 from tabulate import tabulate
 
 app = typer.Typer()

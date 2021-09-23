@@ -4,12 +4,12 @@ import os
 from pathlib import Path
 from yaspin import yaspin
 
-from .benchmark import Benchmark
-from .dataset import Dataset
-from .cube import Cube
-from .utils import check_cube_validity, init_storage, pretty_error, cleanup
-from .config import config
-from .result import Result
+from medperf.entities import Benchmark
+from medperf.entities import Dataset
+from medperf.entities import Cube
+from medperf.utils import check_cube_validity, init_storage, pretty_error, cleanup
+from medperf.config import config
+from medperf.entities import Result
 
 
 class BenchmarkExecution:

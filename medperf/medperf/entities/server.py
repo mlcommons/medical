@@ -3,7 +3,7 @@ import yaml
 import os
 from shutil import copyfile
 
-from .utils import pretty_error, get_file_sha1, cleanup, cube_path
+from medperf.utils import pretty_error, get_file_sha1, cube_path
 
 
 class Server:
@@ -75,6 +75,8 @@ class Server:
             os.mkdir(ws_path)
         return c_path
 
+    # TODO: combine the logic of this and the lower function into a
+    # TODO: Extract magic strings to config file
     def get_cube_params(self, url: str, cube_uid: str) -> str:
         """Retrieves the cube parameters.yaml file from the server
 

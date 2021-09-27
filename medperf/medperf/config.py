@@ -12,4 +12,10 @@ config = {
     "cubes_storage": os.path.join(storage, "cubes"),
     "results_storage": os.path.join(storage, "results"),
     "model_output": "outputs/predictions.csv",
+    "workspace_path": "workspace",
+    "cube_filename": "mlcube.yaml",
+    "params_filename": "parameters.yaml",
+    "additional_path": "workspace/additional_files",
+    "tarball_filename": "tmp.tar.gz",
+    "reg_file": "registration-info.yaml",
 }

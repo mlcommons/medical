@@ -17,7 +17,7 @@ class Server:
 
         Args:
             username (str): Username
-            password (str): password
+            password (str): Password
         """
         body = {"username": username, "password": password}
         res = requests.post(f"{self.server_url}/auth-token", data=body)

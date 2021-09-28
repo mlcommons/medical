@@ -4,9 +4,7 @@ import os
 from pathlib import Path
 from yaspin import yaspin
 
-from medperf.entities import Benchmark
-from medperf.entities import Dataset
-from medperf.entities import Cube
+from medperf.entities import Benchmark, Dataset, Cube, Server
 from medperf.utils import check_cube_validity, init_storage, pretty_error, cleanup
 from medperf.config import config
 from medperf.entities import Result
@@ -14,16 +12,19 @@ from medperf.entities import Result
 
 class BenchmarkExecution:
     @staticmethod
-    def run(benchmark_uid: str, data_uid: str, model_uid: str):
+    def run(benchmark_uid: int, data_uid: int, model_uid: int):
         """Benchmark execution flow.
 
         Args:
-            benchmark_uid (str): UID of the desired benchmark
-            data_uid (str): Registered Dataset UID
-            model_uid (str): UID of model to execute
+            benchmark_uid (int): UID of the desired benchmark
+            data_uid (int): Registered Dataset UID
+            model_uid (int): UID of model to execute
         """
         init_storage()
-        benchmark = Benchmark.get(benchmark_uid)
+        server = Server(config["server"])
+        # TODO: find a better method for handling authentication data
+        server.login("admin", "admin")
+        benchmark = Benchmark.get(benchmark_uid, server)
         dataset = Dataset(data_uid)
 
         if dataset.preparation_cube_uid != benchmark.data_preparation:
@@ -38,13 +39,13 @@ class BenchmarkExecution:
         with yaspin(
             text=f"Retrieving evaluator cube: '{cube_uid}'", color="green"
         ) as sp:
-            evaluator = Cube.get(cube_uid)
+            evaluator = Cube.get(cube_uid, server)
             sp.write("> Evaluator cube download complete")
 
             check_cube_validity(evaluator, sp)
 
             sp.write(f"> Initiating model execution: '{model_uid}'")
-            model_cube = Cube.get(model_uid)
+            model_cube = Cube.get(model_uid, server)
             check_cube_validity(model_cube, sp)
 
             sp.write("Running model inference on dataset")
@@ -63,7 +64,7 @@ class BenchmarkExecution:
             sp.write("Evaluating results")
             out_path = config["results_storage"]
             out_path = os.path.join(
-                out_path, benchmark.uid, model_uid, dataset.data_uid
+                out_path, str(benchmark.uid), str(model_uid), str(dataset.data_uid)
             )
             out_path = os.path.join(out_path, "results.yaml")
             with sp.hidden():
@@ -79,7 +80,7 @@ class BenchmarkExecution:
                 approved = result.request_approval()
             if approved:
                 typer.echo("Uploading")
-                result.upload()
+                result.upload(server)
                 typer.echo("✅ Done!")
             else:
                 pretty_error("Results upload operation cancelled")

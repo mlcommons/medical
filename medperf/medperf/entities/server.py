@@ -127,31 +127,18 @@ class Server:
         Args:
             reg_dict (dict): Dictionary containing registration information.
         """
-        print(reg_dict)
         res = self.__auth_post(f"{self.server_url}/datasets/", json=reg_dict)
         if res.status_code != 201:
             pretty_error("Could not upload the dataset")
         return res.json()["id"]
 
-    def upload_results(
-        self, results_path: str, benchmark_uid: str, model_uid: str, dataset_uid: str
-    ):
+    def upload_results(self, results_dict: dict) -> int:
         """Uploads results to the server.
 
         Args:
-            results_path (str): Location where the results.yaml file can be found.
-            benchmark_uid (str): UID of the used benchmark.
-            model_uid (str): UID of the used model.
-            dataset_uid (str): UID of the used dataset.
+            results_dict (dict): Dictionary containing results information.
         """
-        with open(results_path, "r") as f:
-            scores = yaml.full_load(f)
-        data = {
-            "benchmark_uid": benchmark_uid,
-            "model_uid": model_uid,
-            "dataset_uid": dataset_uid,
-            "scores": scores,
-        }
-        res = self.__auth_post(f"{self.server_url}/results", json=data)
+        res = self.__auth_post(f"{self.server_url}/results/", json=results_dict)
         if res.status_code != 201:
             pretty_error("Could not upload the results")
+        return res.json()["id"]

@@ -42,14 +42,14 @@ class DataPreparation:
 
             check_cube_validity(cube, sp)
 
-            sp.text = "Running Cube"
-            cube.run(
-                task="prepare",
-                data_path=data_path,
-                labels_path=labels_path,
-                # TODO: no need to do all the tmp output logic. Can be moved
-                output_path=out_datapath,
-            )
+            sp.write("Running Cube")
+            with sp.hidden():
+                cube.run(
+                    task="prepare",
+                    data_path=data_path,
+                    labels_path=labels_path,
+                    output_path=out_datapath,
+                )
             sp.write("> Cube execution complete")
 
             sp.text = "Running sanity checks"
@@ -61,12 +61,12 @@ class DataPreparation:
             sp.write("> Statistics complete")
 
             sp.text = "Starting registration procedure"
-            registration = Registration(cube, "testuser")
+            registration = Registration(cube)
             with sp.hidden():
                 approved = registration.request_approval()
                 if approved:
                     registration.retrieve_additional_data()
-                    reg_path = registration.write(out_path)
+                    registration.write(out_path)
                     sp.write("Uploading")
                     data_uid = registration.upload(server)
                     registration.to_permanent_path(out_path, data_uid)

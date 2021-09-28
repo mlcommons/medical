@@ -10,7 +10,7 @@ app = typer.Typer()
 
 @app.command("prepare")
 def prepare(
-    benchmark_uid: str = typer.Option(
+    benchmark_uid: int = typer.Option(
         ..., "--benchmark", "-b", help="UID of the desired benchmark"
     ),
     data_path: str = typer.Option(
@@ -23,7 +23,7 @@ def prepare(
     """Runs the Data preparation step for a specified benchmark and raw dataset
 
     Args:
-        benchmark_uid (str): UID of the desired benchmark.
+        benchmark_uid (int): UID of the desired benchmark.
         data_path (str): Location of the data to be prepared.
         labels_path (str): Labels file location.
     """
@@ -33,22 +33,22 @@ def prepare(
 
 @app.command("execute")
 def execute(
-    benchmark_uid: str = typer.Option(
+    benchmark_uid: int = typer.Option(
         ..., "--benchmark", "-b", help="UID of the desired benchmark"
     ),
-    data_uid: str = typer.Option(
+    data_uid: int = typer.Option(
         ..., "--data_uid", "-d", help="Registered Dataset UID"
     ),
-    model_uid: str = typer.Option(
+    model_uid: int = typer.Option(
         ..., "--model_uid", "-m", help="UID of model to execute"
     ),
 ):
     """Runs the benchmark execution step for a given benchmark, prepared dataset and model
 
     Args:
-        benchmark_uid (str): UID of the desired benchmark.
-        data_uid (str): Registered Dataset UID.
-        model_uid (str): UID of model to execute.
+        benchmark_uid (int): UID of the desired benchmark.
+        data_uid (int): Registered Dataset UID.
+        model_uid (int): UID of model to execute.
     """
     typer.echo("MedPerf 0.0.0")
     BenchmarkExecution.run(benchmark_uid, data_uid, model_uid)

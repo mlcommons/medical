@@ -2,10 +2,9 @@ import os
 import typer
 from yaspin import yaspin
 
-from medperf.entities import Benchmark
-from medperf.entities import Cube
-from medperf.entities import Registration
-from .utils import (
+from medperf.entities import Benchmark, Cube, Registration, Server
+from medperf.config import config
+from medperf.utils import (
     check_cube_validity,
     generate_tmp_datapath,
     init_storage,
@@ -24,18 +23,21 @@ class DataPreparation:
             data_path (str): Location of the data to be prepared.
             labels_path (str): Labels file location.
         """
+        server = Server(config["server"])
+        # TODO: find a way to store authentication credentials
+        server.login("admin", "admin")
         data_path = os.path.abspath(data_path)
         labels_path = os.path.abspath(labels_path)
         out_path, out_datapath = generate_tmp_datapath()
         init_storage()
-        benchmark = Benchmark.get(benchmark_uid)
+        benchmark = Benchmark.get(benchmark_uid, server)
         typer.echo(f"Benchmark: {benchmark.name}")
 
         cube_uid = benchmark.data_preparation
         with yaspin(
             text=f"Retrieving data preparation cube: '{cube_uid}'", color="green"
         ) as sp:
-            cube = Cube.get(cube_uid)
+            cube = Cube.get(cube_uid, server)
             sp.write("> Preparation cube download complete")
 
             check_cube_validity(cube, sp)
@@ -62,13 +64,13 @@ class DataPreparation:
             registration = Registration(cube, "testuser")
             with sp.hidden():
                 approved = registration.request_approval()
-            if approved:
-                registration.retrieve_additional_data()
-                reg_path = registration.write(out_path)
-                out_path = registration.to_permanent_path(out_path, reg_path)
-                sp.text("Uploading")
-                registration.upload()
-                sp.text("✅ Done!")
-            else:
-                pretty_error("Registration operation cancelled")
+                if approved:
+                    registration.retrieve_additional_data()
+                    reg_path = registration.write(out_path)
+                    sp.write("Uploading")
+                    data_uid = registration.upload(server)
+                    registration.to_permanent_path(out_path, data_uid)
+                    sp.write("✅ Done!")
+                else:
+                    pretty_error("Registration operation cancelled")
             cleanup()

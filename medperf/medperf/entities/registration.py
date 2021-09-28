@@ -4,17 +4,15 @@ from pathlib import Path
 import typer
 import os
 
-from .config import config
-from .server import Server
-from .cube import Cube
-from .utils import get_file_sha1, approval_prompt, dict_pretty_print
+from medperf.config import config
+from medperf.utils import get_file_sha1, approval_prompt, dict_pretty_print
+from medperf.entities import Server, Cube
 
 
 class Registration:
     def __init__(
         self,
         cube: Cube,
-        owner: str,
         name: str = None,
         description: str = None,
         location: str = None,
@@ -28,7 +26,6 @@ class Registration:
             description (str, optional): Assigned description. Defaults to None.
             location (str, optional): Assigned location. Defaults to None.
         """
-        self.owner = owner
         self.cube = cube
         self.stats = self.__get_stats()
         dt = datetime.now()
@@ -36,7 +33,7 @@ class Registration:
         self.name = name
         self.description = description
         self.location = location
-        self.approved = False
+        self.status = "PENDING"
         self.path = None
 
     @property
@@ -48,7 +45,7 @@ class Registration:
         """
         if self.name is None:
             return None
-        return "_".join([self.owner, self.name])
+        return "_".join([self.name])
 
     def __get_stats(self) -> dict:
         """Unwinds the cube output statistics location and retrieves the statistics data
@@ -72,12 +69,12 @@ class Registration:
             "name": self.name,
             "description": self.description,
             "location": self.location,
-            "owner": self.owner,
             "split_seed": 0,
-            "preparation_cube_uid": self.cube.uid,
-            "metadata": {},
+            "data_preparation_mlcube": self.cube.uid,
+            "generated_uid": self.uid,
+            "metadata": self.stats,
+            "status": self.status,
         }
-        registration.update(self.stats)
 
         if self.uid is not None:
             registration.update({"uid": self.uid})
@@ -97,31 +94,34 @@ class Registration:
         Returns:
             bool: Wether the user gave consent or not.
         """
-        if self.approved:
+        if self.status == "APPROVED":
             return True
 
         dict_pretty_print(self.todict())
         typer.echo(
             "Above is the information and statistics that will be registered to the database"
         )
-        self.approved = approval_prompt(
+        approved = approval_prompt(
             "Do you approve the registration of the presented data to the MLCommons server? [Y/n] "
         )
-        return self.approved
+        if approved:
+            self.status = "APPROVED"
+        else:
+            self.status = "REJECTED"
+        return approved
 
-    def to_permanent_path(self, out_path: str, reg_path: str) -> str:
+    def to_permanent_path(self, out_path: str, uid: int) -> str:
         """Renames the temporary data folder to permanent one using the hash of
         the registration file
 
         Args:
             out_path (str): current temporary location of the data
-            reg_path (str): path to registration file
+            uid (int): UID of registered dataset. Obtained after uploading to server
 
         Returns:
             str: renamed location of the data.
         """
-        sha = get_file_sha1(reg_path)
-        new_path = os.path.join(str(Path(out_path).parent), sha)
+        new_path = os.path.join(str(Path(out_path).parent), str(uid))
         os.rename(out_path, new_path)
         self.path = new_path
         return new_path
@@ -144,8 +144,13 @@ class Registration:
         self.path = filepath
         return filepath
 
-    def upload(self):
+    def upload(self, server: Server) -> int:
         """Uploads the registration information to the server.
+
+        Args:
+            server (Server): Instance of the server interface.
+        
+        Returns:
+            int: UID of registered dataset
         """
-        server = Server(config["server"])
-        server.upload_dataset(self.path)
+        return server.upload_dataset(self.todict())

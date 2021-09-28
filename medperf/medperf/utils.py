@@ -10,8 +10,6 @@ import typer
 import yaml
 from pathlib import Path
 
-from medperf.entities import Cube
-
 
 def get_file_sha1(path: str) -> str:
     """Calculates the sha1 hash for a given file.
@@ -52,13 +50,15 @@ def init_storage():
 def cleanup():
     """Removes clutter and unused files from the medperf folder structure.
     """
-    rmtree(config["tmp_storage"])
+    if os.path.exists(config["tmp_storage"]):
+        rmtree(config["tmp_storage"])
     dsets = get_dsets()
     prefix = config["tmp_reg_prefix"]
     unreg_dsets = [dset for dset in dsets if dset.startswith(prefix)]
     for dset in unreg_dsets:
         dset_path = os.path.join(config["data_storage"], dset)
-        rmtree(dset_path)
+        if os.path.exists(dset_path):
+            rmtree(dset_path)
 
 
 def get_dsets() -> List[str]:
@@ -88,16 +88,16 @@ def pretty_error(msg: str, clean: bool = True):
     exit()
 
 
-def cube_path(uid: str) -> str:
+def cube_path(uid: int) -> str:
     """Gets the path for a given cube.
 
     Args:
-        uid (str): Cube UID.
+        uid (int): Cube UID.
 
     Returns:
         str: Location of the cube folder structure.
     """
-    return os.path.join(config["storage"], "cubes", uid)
+    return os.path.join(config["storage"], "cubes", str(uid))
 
 
 def generate_tmp_datapath() -> Tuple[str, str]:
@@ -118,7 +118,7 @@ def generate_tmp_datapath() -> Tuple[str, str]:
     return out_path, out_datapath
 
 
-def check_cube_validity(cube: Cube, sp: Yaspin):
+def check_cube_validity(cube: "Cube", sp: Yaspin):
     """Helper function for pretty printing the cube validity process.
 
     Args:

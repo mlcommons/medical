@@ -3,10 +3,8 @@ import yaml
 import os
 from pathlib import Path
 
-from .server import Server
-from .config import config
-
-from .utils import get_file_sha1, untar_additional
+from medperf.entities import Server
+from medperf.utils import get_file_sha1, untar_additional
 
 
 class Cube(object):
@@ -34,26 +32,27 @@ class Cube(object):
         self.additional_hash = additional_hash
 
     @classmethod
-    def get(cls, cube_uid: str) -> "Cube":
+    def get(cls, cube_uid: str, server: Server) -> "Cube":
         """Retrieves and creates a Cube instance from the server
 
         Args:
             cube_uid (str): UID of the cube.
+            server (Server): Instance of the server interface.
 
         Returns:
-            Cube : a Cube instance with the retrieved data
+            Cube : a Cube instance with the retrieved data.
         """
-        server = Server(config["server"])
+        cube_uid = cube_uid
         meta = server.get_cube_metadata(cube_uid)
-        cube_path = server.get_cube(meta["url"], cube_uid)
+        cube_path = server.get_cube(meta["git_cube_url"], cube_uid)
         params_path = None
         additional_path = None
         additional_hash = None
-        if "parameters_url" in meta:
-            url = meta["parameters_url"]
+        if "git_params_url" in meta and meta["git_params_url"] is not None:
+            url = meta["git_params_url"]
             params_path = server.get_cube_params(url, cube_uid)
-        if "additional_files_url" in meta:
-            url = meta["additional_files_url"]
+        if "tarball_url" in meta and meta["tarball_url"] is not None:
+            url = meta["tarball_url"]
             additional_path = server.get_cube_additional(url, cube_uid)
             additional_hash = get_file_sha1(additional_path)
             untar_additional(additional_path)
@@ -66,15 +65,14 @@ class Cube(object):
         Returns:
             bool: Wether the cube and related files match the expeced hashes
         """
-        valid_cube = get_file_sha1(self.cube_path) == self.meta["sha1"]
-        has_additional = "additional_files_url" in self.meta
+        has_additional = (
+            "tarball_url" in self.meta and self.meta["tarball_url"] is not None
+        )
         if has_additional:
-            valid_additional = (
-                self.additional_hash == self.meta["additional_files_sha1"]
-            )
+            valid_additional = self.additional_hash == self.meta["tarball_hash"]
         else:
             valid_additional = True
-        return valid_cube and valid_additional
+        return valid_additional
 
     def run(self, task: str, **kwargs):
         """Executes a given task on the cube instance

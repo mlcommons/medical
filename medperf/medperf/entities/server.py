@@ -20,7 +20,7 @@ class Server:
             password (str): Password
         """
         body = {"username": username, "password": password}
-        res = requests.post(f"{self.server_url}/auth-token", data=body)
+        res = requests.post(f"{self.server_url}/auth-token/", json=body)
         if res.status_code != 200:
             pretty_error("Unable to authentica user with provided credentials")
 
@@ -52,57 +52,40 @@ class Server:
         benchmark = res.json()
         return benchmark
 
-    def get_cube_metadata(self, cube_uid: str) -> dict:
+    def get_cube_metadata(self, cube_uid: int) -> dict:
         """Retrieves metadata about the specified cube
 
         Args:
-            cube_uid (str): UID of the desired cube.
+            cube_uid (int): UID of the desired cube.
 
         Returns:
             dict: Dictionary containing url and hashes for the cube files
         """
-        res = self.__auth_get(f"{self.server_url}/cubes/{cube_uid}/metadata")
+        res = self.__auth_get(f"{self.server_url}/mlcubes/{cube_uid}/")
         if res.status_code != 200:
             pretty_error("the specified cube doesn't exist")
         metadata = res.json()
         return metadata
 
-    def __create_cube_fs(self, uid: str) -> str:
-        """Creates the required folder structure for a cube
-
-        Args:
-            uid (str): Cube UID.
-
-        Returns:
-            str: Path to the cube folder structure.
-        """
-        c_path = cube_path(uid)
-        ws = config["workspace_path"]
-        if not os.path.isdir(c_path):
-            os.mkdir(c_path)
-            ws_path = os.path.join(c_path, ws)
-            os.mkdir(ws_path)
-        return c_path
-
-    def get_cube(self, url: str, uid: str) -> str:
+    def get_cube(self, url: str, cube_uid: int) -> str:
         """Downloads and writes an mlcube.yaml file from the server
 
         Args:
             url (str): URL where the mlcube.yaml file can be downloaded.
-            uid (str): Cube UID.
+            cube_uid (int): Cube UID.
 
         Returns:
             str: location where the mlcube.yaml file is stored locally.
         """
         cube_file = config["cube_filename"]
-        return self.__get_cube_file(url, uid, "", cube_file)
+        return self.__get_cube_file(url, cube_uid, "", cube_file)
 
-    def get_cube_params(self, url: str, cube_uid: str) -> str:
+    def get_cube_params(self, url: str, cube_uid: int) -> str:
         """Retrieves the cube parameters.yaml file from the server
 
         Args:
             url (str): URL where the parameters.yaml file can be downloaded.
-            cube_uid (str): Cube UID.
+            cube_uid (int): Cube UID.
 
         Returns:
             str: Location where the parameters.yaml file is stored locally.
@@ -111,12 +94,12 @@ class Server:
         params_file = config["params_filename"]
         return self.__get_cube_file(url, cube_uid, ws, params_file)
 
-    def get_cube_additional(self, url: str, cube_uid: str) -> str:
+    def get_cube_additional(self, url: str, cube_uid: int) -> str:
         """Retrieves and stores the additional_files.tar.gz file from the server
 
         Args:
             url (str): URL where the additional_files.tar.gz file can be downloaded.
-            cube_uid (str): Cube UID.
+            cube_uid (int): Cube UID.
 
         Returns:
             str: Location where the additional_files.tar.gz file is stored locally.
@@ -125,7 +108,7 @@ class Server:
         tball_file = config["tarball_filename"]
         return self.__get_cube_file(url, cube_uid, add_path, tball_file)
 
-    def __get_cube_file(self, url: str, cube_uid: str, path: str, filename: str):
+    def __get_cube_file(self, url: str, cube_uid: int, path: str, filename: str):
         res = requests.get(url)
         if res.status_code != 200:
             pretty_error("There was a problem retrieving the specified file at " + url)
@@ -138,22 +121,17 @@ class Server:
         open(filepath, "wb+").write(res.content)
         return filepath
 
-    def upload_dataset(self, parent_path: str, filename: str = config["reg_file"]):
+    def upload_dataset(self, reg_dict: dict):
         """Uploads registration data to the server, under the sha name of the file.
 
         Args:
-            parent_path (str): Path to the registration data.
-            filename (str, optional): Name of the registration file. Defaults to config["reg_file"].
+            reg_dict (dict): Dictionary containing registration information.
         """
-        dataset_reg_path = os.path.join(parent_path, filename)
-        reg_sha = get_file_sha1(dataset_reg_path)
-        new_name = os.path.join(parent_path, reg_sha + ".yaml")
-        copyfile(dataset_reg_path, new_name)
-        files = {"file": open(new_name, "rb")}
-        res = self.__auth_post(f"{self.server_url}/datasets", files=files)
-        os.remove(new_name)
-        if res.status_code != 200:
+        print(reg_dict)
+        res = self.__auth_post(f"{self.server_url}/datasets/", json=reg_dict)
+        if res.status_code != 201:
             pretty_error("Could not upload the dataset")
+        return res.json()["id"]
 
     def upload_results(
         self, results_path: str, benchmark_uid: str, model_uid: str, dataset_uid: str
@@ -175,5 +153,5 @@ class Server:
             "scores": scores,
         }
         res = self.__auth_post(f"{self.server_url}/results", json=data)
-        if res.status_code != 200:
+        if res.status_code != 201:
             pretty_error("Could not upload the results")

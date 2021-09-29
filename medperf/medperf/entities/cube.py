@@ -44,12 +44,12 @@ class Cube(object):
         """
         cube_uid = cube_uid
         meta = server.get_cube_metadata(cube_uid)
-        cube_path = server.get_cube(meta["git_cube_url"], cube_uid)
+        cube_path = server.get_cube(meta["git_mlcube_url"], cube_uid)
         params_path = None
         additional_path = None
         additional_hash = None
-        if "git_params_url" in meta and meta["git_params_url"] is not None:
-            url = meta["git_params_url"]
+        if "git_parameters_url" in meta and meta["git_parameters_url"] is not None:
+            url = meta["git_parameters_url"]
             params_path = server.get_cube_params(url, cube_uid)
         if "tarball_url" in meta and meta["tarball_url"] is not None:
             url = meta["tarball_url"]

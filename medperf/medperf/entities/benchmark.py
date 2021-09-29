@@ -51,5 +51,4 @@ class Benchmark:
         Returns:
             List[str]: List of mlcube uids
         """
-        # TODO: endpoint still not implemented.
-        return []
+        return server.get_benchmark_models(benchmark_uid)

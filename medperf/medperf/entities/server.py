@@ -37,11 +37,11 @@ class Server:
             pretty_error("Must be authenticated")
         return req_func(url, headers={"Authorization": f"Token {self.token}"}, **kwargs)
 
-    def get_benchmark(self, benchmark_uid: str) -> dict:
+    def get_benchmark(self, benchmark_uid: int) -> dict:
         """Retrieves the benchmark specification file from the server
 
         Args:
-            benchmark_uid (str): uid for the desired benchmark
+            benchmark_uid (int): uid for the desired benchmark
 
         Returns:
             dict: benchmark specification
@@ -51,6 +51,22 @@ class Server:
             pretty_error("the specified benchmark doesn't exist")
         benchmark = res.json()
         return benchmark
+
+    def get_benchmark_models(self, benchmark_uid: int) -> list[int]:
+        """Retrieves all the models associated with a benchmark. reference model not included
+
+        Args:
+            benchmark_uid (int): UID of the desired benchmark
+
+        Returns:
+            list[int]: List of model UIDS
+        """
+        res = self.__auth_get(f"{self.server_url}/benchmarks/{benchmark_uid}/models")
+        if res.status_code != 200:
+            pretty_error("couldn't retrieve models for the specified benchmark")
+        models = res.json()
+        model_uids = [model["id"] for model in models]
+        return model_uids
 
     def get_cube_metadata(self, cube_uid: int) -> dict:
         """Retrieves metadata about the specified cube

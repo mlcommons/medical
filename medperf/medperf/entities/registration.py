@@ -104,10 +104,6 @@ class Registration:
         approved = approval_prompt(
             "Do you approve the registration of the presented data to the MLCommons server? [Y/n] "
         )
-        if approved:
-            self.status = "APPROVED"
-        else:
-            self.status = "REJECTED"
         return approved
 
     def to_permanent_path(self, out_path: str, uid: int) -> str:
@@ -144,13 +140,17 @@ class Registration:
         self.path = filepath
         return filepath
 
-    def upload(self, server: Server) -> int:
+    def upload(self, benchmark_uid: int, server: Server) -> int:
         """Uploads the registration information to the server.
 
         Args:
+            benchmark_uid (int): UID of the benchmark used to create the dataset
             server (Server): Instance of the server interface.
         
         Returns:
             int: UID of registered dataset
         """
-        return server.upload_dataset(self.todict())
+        dataset_uid = server.upload_dataset(self.todict())
+        server.associate_dataset(dataset_uid, benchmark_uid)
+
+        return

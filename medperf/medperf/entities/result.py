@@ -55,10 +55,6 @@ class Result:
             "Do you approve uploading the presented results to the MLCommons server? [Y/n]"
         )
 
-        if approved:
-            self.status = "APPROVED"
-        else:
-            self.status = "REJECTED"
         return approved
 
     def upload(self, server: Server):

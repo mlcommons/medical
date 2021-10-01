@@ -2,6 +2,7 @@ import subprocess
 import yaml
 import os
 from pathlib import Path
+import pexpect
 
 from medperf.entities import Server
 from medperf.utils import get_file_sha1, untar_additional
@@ -85,9 +86,7 @@ class Cube(object):
             cmd_arg = f"{k}={v}"
             cmd = " ".join([cmd, cmd_arg])
 
-        splitted_cmd = cmd.split()
-
-        subprocess.check_call(splitted_cmd, cwd=".")
+        return pexpect.spawn(cmd)
 
     def get_default_output(self, task: str, out_key: str, param_key: str = None) -> str:
         """Returns the output parameter specified in the mlcube.yaml file

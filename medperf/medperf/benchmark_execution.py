@@ -5,7 +5,13 @@ from pathlib import Path
 from yaspin import yaspin
 
 from medperf.entities import Benchmark, Dataset, Cube, Server
-from medperf.utils import check_cube_validity, init_storage, pretty_error, cleanup
+from medperf.utils import (
+    check_cube_validity,
+    init_storage,
+    pretty_error,
+    cleanup,
+    combine_proc_sp_text,
+)
 from medperf.config import config
 from medperf.entities import Result
 
@@ -29,6 +35,7 @@ class BenchmarkExecution:
         if not server.authorized_by_role(benchmark_uid, "DATA_OWNER"):
             pretty_error("You're not associated to the benchmark as a data owner")
         benchmark = Benchmark.get(benchmark_uid, server)
+        typer.echo(f"Benchmark Execution: {benchmark.name}")
         dataset = Dataset(data_uid)
 
         if dataset.preparation_cube_uid != benchmark.data_preparation:
@@ -40,24 +47,22 @@ class BenchmarkExecution:
             pretty_error("The provided model is not part of the specified benchmark.")
 
         cube_uid = benchmark.evaluator
-        with yaspin(
-            text=f"Retrieving evaluator cube: '{cube_uid}'", color="green"
-        ) as sp:
+        with yaspin(text=f"Retrieving evaluator cube", color="green") as sp:
             evaluator = Cube.get(cube_uid, server)
             sp.write("> Evaluator cube download complete")
 
             check_cube_validity(evaluator, sp)
 
+            sp.text = "Retrieving model cube. This could take a while..."
             model_cube = Cube.get(model_uid, server)
-            sp.write(f"> Initiating model execution: '{model_cube.name}'")
             check_cube_validity(model_cube, sp)
 
-            sp.write("Running model inference on dataset")
+            sp.text = "Running model inference on dataset"
             out_path = config["model_output"]
-            with sp.hidden():
-                model_cube.run(
-                    task="infer", data_path=dataset.data_path, output_path=out_path
-                )
+            proc = model_cube.run(
+                task="infer", data_path=dataset.data_path, output_path=out_path
+            )
+            combine_proc_sp_text(proc, sp)
             sp.write("> Model execution complete")
 
             cube_root = str(Path(model_cube.cube_path).parent)
@@ -65,19 +70,19 @@ class BenchmarkExecution:
             abs_preds_path = os.path.join(workspace_path, out_path)
             labels_path = os.path.join(dataset.data_path, "data.csv")
 
-            sp.write("Evaluating results")
+            sp.text = "Evaluating results"
             out_path = config["results_storage"]
             out_path = os.path.join(
                 out_path, str(benchmark.uid), str(model_uid), str(dataset.data_uid)
             )
             out_path = os.path.join(out_path, "results.yaml")
-            with sp.hidden():
-                evaluator.run(
-                    task="evaluate",
-                    preds_csv=abs_preds_path,
-                    labels_csv=labels_path,
-                    output_path=out_path,
-                )
+            proc = evaluator.run(
+                task="evaluate",
+                preds_csv=abs_preds_path,
+                labels_csv=labels_path,
+                output_path=out_path,
+            )
+            combine_proc_sp_text(proc, sp)
 
             result = Result(out_path, benchmark.uid, dataset.data_uid, model_uid)
             with sp.hidden():

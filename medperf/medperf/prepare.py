@@ -10,6 +10,7 @@ from medperf.utils import (
     init_storage,
     cleanup,
     pretty_error,
+    combine_proc_sp_text,
 )
 
 
@@ -35,7 +36,7 @@ class DataPreparation:
         if not server.authorized_by_role(benchmark_uid, "DATA_OWNER"):
             pretty_error("You're not associated to the benchmark as a data owner")
         benchmark = Benchmark.get(benchmark_uid, server)
-        typer.echo(f"Benchmark: {benchmark.name}")
+        typer.echo(f"Benchmark Data Preparation: {benchmark.name}")
 
         cube_uid = benchmark.data_preparation
         with yaspin(
@@ -46,22 +47,24 @@ class DataPreparation:
 
             check_cube_validity(cube, sp)
 
-            sp.write("Running Cube")
-            with sp.hidden():
-                cube.run(
-                    task="prepare",
-                    data_path=data_path,
-                    labels_path=labels_path,
-                    output_path=out_datapath,
-                )
+            sp.text = f"Running preparation step..."
+            proc = cube.run(
+                task="prepare",
+                data_path=data_path,
+                labels_path=labels_path,
+                output_path=out_datapath,
+            )
+            combine_proc_sp_text(proc, sp)
             sp.write("> Cube execution complete")
 
-            sp.text = "Running sanity checks"
-            cube.run(task="sanity_check", data_path=out_datapath)
+            sp.text = "Running sanity check..."
+            proc = cube.run(task="sanity_check", data_path=out_datapath)
+            combine_proc_sp_text(proc, sp)
             sp.write("> Sanity checks complete")
 
-            sp.text = "Generating statistics"
+            sp.text = "Generating statistics..."
             cube.run(task="statistics", data_path=out_datapath)
+            combine_proc_sp_text(proc, sp)
             sp.write("> Statistics complete")
 
             sp.text = "Starting registration procedure"

@@ -3,12 +3,14 @@ from typing import List, Tuple
 from datetime import datetime
 import hashlib
 import os
-from .config import config
 from shutil import rmtree
 import tarfile
 import typer
 import yaml
 from pathlib import Path
+from colorama import Fore, Style
+
+from medperf.config import config
 
 
 def get_file_sha1(path: str) -> str:
@@ -128,7 +130,7 @@ def check_cube_validity(cube: "Cube", sp: Yaspin):
     sp.text = "Checking cube MD5 hash..."
     if not cube.is_valid():
         pretty_error("MD5 hash doesn't match")
-    sp.write("> Cube MD5 hash check complete")
+    sp.write(f"> {cube.name} MD5 hash check complete")
 
 
 def untar_additional(add_filepath: str) -> str:
@@ -175,3 +177,19 @@ def dict_pretty_print(in_dict: dict):
     in_dict = {k: v for (k, v) in in_dict.items() if v is not None}
     typer.echo(yaml.dump(in_dict))
     typer.echo("=" * 20)
+
+
+def combine_proc_sp_text(proc, sp):
+    static_text = sp.text
+    while proc.isalive():
+        line = byte = proc.read(1)
+        while byte and byte != b"\r":
+            byte = proc.read(1)
+            line += byte
+        if not byte:
+            break
+        line = line.decode("utf-8", "ignore")
+        sp.text = (
+            f"{static_text} {Fore.WHITE}{Style.DIM}{line.strip()}{Style.RESET_ALL}"
+        )
+    print()

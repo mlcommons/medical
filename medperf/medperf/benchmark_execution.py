@@ -23,7 +23,11 @@ class BenchmarkExecution:
         init_storage()
         server = Server(config["server"])
         # TODO: find a better method for handling authentication data
-        server.login("admin", "admin")
+        server.login("testdataowner", "test")
+
+        # Ensure user can access the specified benchmark
+        if not server.authorized_by_role(benchmark_uid, "DATA_OWNER"):
+            pretty_error("You're not associated to the benchmark as a data owner")
         benchmark = Benchmark.get(benchmark_uid, server)
         dataset = Dataset(data_uid)
 
@@ -44,8 +48,8 @@ class BenchmarkExecution:
 
             check_cube_validity(evaluator, sp)
 
-            sp.write(f"> Initiating model execution: '{model_uid}'")
             model_cube = Cube.get(model_uid, server)
+            sp.write(f"> Initiating model execution: '{model_cube.name}'")
             check_cube_validity(model_cube, sp)
 
             sp.write("Running model inference on dataset")

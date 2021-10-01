@@ -5,6 +5,7 @@ from shutil import copyfile
 
 from medperf.utils import pretty_error, get_file_sha1, cube_path
 from medperf.config import config
+from medperf.enums import Role
 
 
 class Server:
@@ -36,6 +37,40 @@ class Server:
         if self.token is None:
             pretty_error("Must be authenticated")
         return req_func(url, headers={"Authorization": f"Token {self.token}"}, **kwargs)
+
+    def benchmark_association(self, benchmark_uid: int) -> Role:
+        """Retrieves the benchmark association
+
+        Args:
+            benchmark_uid (int): UID of the benchmark
+
+        Returns:
+            Role: the association type between current user and benchmark
+        """
+        res = self.__auth_get(f"{self.server_url}/me/benchmarks")
+        if res.status_code != 200:
+            pretty_error("there was an error retrieving the current user's benchmarks")
+
+        benchmarks = res.json()
+        bm_dict = {bm["benchmark"]: bm for bm in benchmarks}
+        rolename = None
+        if benchmark_uid in bm_dict:
+            rolename = bm_dict[benchmark_uid]["role"]
+        return Role(rolename)
+
+    def authorized_by_role(self, benchmark_uid: int, role: str) -> bool:
+        """Indicates wether the current user is authorized to access
+        a benchmark based on desired role 
+
+        Args:
+            benchmark_uid (int): UID of the benchmark
+            role (str): Desired role to check for authorization
+
+        Returns:
+            bool: Wether the user has the specified role for that benchmark
+        """
+        assoc_role = self.benchmark_association(benchmark_uid)
+        return assoc_role.name == role
 
     def get_benchmark(self, benchmark_uid: int) -> dict:
         """Retrieves the benchmark specification file from the server

@@ -25,11 +25,15 @@ class DataPreparation:
         """
         server = Server(config["server"])
         # TODO: find a way to store authentication credentials
-        server.login("admin", "admin")
+        server.login("testdataowner", "test")
         data_path = os.path.abspath(data_path)
         labels_path = os.path.abspath(labels_path)
         out_path, out_datapath = generate_tmp_datapath()
         init_storage()
+
+        # Ensure user can access the specified benchmark
+        if not server.authorized_by_role(benchmark_uid, "DATA_OWNER"):
+            pretty_error("You're not associated to the benchmark as a data owner")
         benchmark = Benchmark.get(benchmark_uid, server)
         typer.echo(f"Benchmark: {benchmark.name}")
 

@@ -4,6 +4,7 @@ import os
 home = str(Path.home())
 storage = os.path.join(home, "medperf")
 config = {
+    "version": "0.0.0",
     "server": "http://localhost:8000",
     "storage": storage,
     "tmp_reg_prefix": "tmp_",
@@ -18,4 +19,5 @@ config = {
     "additional_path": "workspace/additional_files",
     "tarball_filename": "tmp.tar.gz",
     "reg_file": "registration-info.yaml",
+    "log_file": os.path.join(storage, "medperf.log"),
 }

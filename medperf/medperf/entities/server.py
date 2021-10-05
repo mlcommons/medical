@@ -1,9 +1,7 @@
 import requests
-import yaml
+import logging
 import os
-from shutil import copyfile
-
-from medperf.utils import pretty_error, get_file_sha1, cube_path
+from medperf.utils import pretty_error, cube_path
 from medperf.config import config
 from medperf.enums import Role
 
@@ -23,6 +21,7 @@ class Server:
         body = {"username": username, "password": password}
         res = requests.post(f"{self.server_url}/auth-token/", json=body)
         if res.status_code != 200:
+            logging.error(res.json())
             pretty_error("Unable to authentica user with provided credentials")
 
         self.token = res.json()["token"]
@@ -49,6 +48,7 @@ class Server:
         """
         res = self.__auth_get(f"{self.server_url}/me/benchmarks")
         if res.status_code != 200:
+            logging.error(res.json())
             pretty_error("there was an error retrieving the current user's benchmarks")
 
         benchmarks = res.json()
@@ -83,6 +83,7 @@ class Server:
         """
         res = self.__auth_get(f"{self.server_url}/benchmarks/{benchmark_uid}")
         if res.status_code != 200:
+            logging.error(res.json())
             pretty_error("the specified benchmark doesn't exist")
         benchmark = res.json()
         return benchmark
@@ -98,6 +99,7 @@ class Server:
         """
         res = self.__auth_get(f"{self.server_url}/benchmarks/{benchmark_uid}/models")
         if res.status_code != 200:
+            logging.error(res.json())
             pretty_error("couldn't retrieve models for the specified benchmark")
         models = res.json()
         model_uids = [model["id"] for model in models]
@@ -114,6 +116,7 @@ class Server:
         """
         res = self.__auth_get(f"{self.server_url}/mlcubes/{cube_uid}/")
         if res.status_code != 200:
+            logging.error(res.json())
             pretty_error("the specified cube doesn't exist")
         metadata = res.json()
         return metadata
@@ -162,6 +165,7 @@ class Server:
     def __get_cube_file(self, url: str, cube_uid: int, path: str, filename: str):
         res = requests.get(url)
         if res.status_code != 200:
+            logging.error(res.json())
             pretty_error("There was a problem retrieving the specified file at " + url)
 
         c_path = cube_path(cube_uid)
@@ -180,6 +184,7 @@ class Server:
         """
         res = self.__auth_post(f"{self.server_url}/datasets/", json=reg_dict)
         if res.status_code != 201:
+            logging.error(res.json())
             pretty_error("Could not upload the dataset")
         return res.json()["id"]
 
@@ -191,5 +196,6 @@ class Server:
         """
         res = self.__auth_post(f"{self.server_url}/results/", json=results_dict)
         if res.status_code != 201:
+            logging.error(res.json())
             pretty_error("Could not upload the results")
         return res.json()["id"]

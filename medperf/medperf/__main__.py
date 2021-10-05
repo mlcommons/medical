@@ -1,9 +1,12 @@
 import typer
+import logging
+from tabulate import tabulate
 
 from medperf import DataPreparation
 from medperf import BenchmarkExecution
 from medperf.entities import Dataset
-from tabulate import tabulate
+from medperf.config import config
+
 
 app = typer.Typer()
 
@@ -27,7 +30,7 @@ def prepare(
         data_path (str): Location of the data to be prepared.
         labels_path (str): Labels file location.
     """
-    typer.echo("MedPerf 0.0.0")
+    logging.info("Running the 'prepare' command")
     DataPreparation.run(benchmark_uid, data_path, labels_path)
 
 
@@ -50,7 +53,7 @@ def execute(
         data_uid (int): Registered Dataset UID.
         model_uid (int): UID of model to execute.
     """
-    typer.echo("MedPerf 0.0.0")
+    logging.info("Running the 'execute' command")
     BenchmarkExecution.run(benchmark_uid, data_uid, model_uid)
 
 
@@ -58,7 +61,7 @@ def execute(
 def datasets():
     """Prints information about prepared datasets living locally
     """
-    typer.echo("MedPerf 0.0.0")
+    logging.info("Running the 'execute' command")
     dsets = Dataset.all()
     headers = ["UID", "Name", "Data Preparation Cube UID"]
     dsets_data = [
@@ -66,6 +69,22 @@ def datasets():
     ]
     tab = tabulate(dsets_data, headers=headers)
     print(tab)
+
+
+@app.callback()
+def main(log: str = "INFO", log_file: str = config["log_file"]):
+    """Manage global configuration and options, like logging or shared initial prints
+
+    Args:
+        log (str, optional): Logging level to use. Defaults to "INFO".
+        log_file (str, optional): File to use for logging. Defaults to the path defined in config.
+    """
+    log = log.upper()
+    log_lvl = getattr(logging, log)
+    log_fmt = "%(asctime)s | %(levelname)s: %(message)s"
+    logging.basicConfig(filename=log_file, level=log_lvl, format=log_fmt)
+    logging.info(f"Running MedPerf v{config['version']} on {log} logging level")
+    typer.echo(f"MedPerf {config['version']}")
 
 
 if __name__ == "__main__":

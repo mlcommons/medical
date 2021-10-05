@@ -71,8 +71,9 @@ class DataPreparation:
                 if approved:
                     registration.retrieve_additional_data()
                     registration.write(out_path)
+                    registration.generate_uid(out_path)
                     sp.write("Uploading")
-                    data_uid = registration.upload(server)
+                    data_uid = registration.upload(benchmark_uid, server)
                     registration.to_permanent_path(out_path, data_uid)
                     sp.write("✅ Done!")
                 else:

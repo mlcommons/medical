@@ -1,3 +1,4 @@
+import logging
 import yaml
 import os
 from pathlib import Path
@@ -91,9 +92,11 @@ class Cube(object):
             cmd_arg = f"{k}={v}"
             cmd = " ".join([cmd, cmd_arg])
         proc = pexpect.spawn(cmd)
-        combine_proc_sp_text(proc, sp)
+        proc_out = combine_proc_sp_text(proc, sp)
         proc.close()
         if proc.exitstatus != 0:
+            logging.error(proc_out)
+            sp.text = "\n"
             pretty_error("There was an error while executing the cube")
         return proc
 

@@ -5,7 +5,11 @@ import typer
 import os
 
 from medperf.config import config
-from medperf.utils import get_file_sha1, approval_prompt, dict_pretty_print
+from medperf.utils import (
+    approval_prompt,
+    dict_pretty_print,
+    get_folder_sha1,
+)
 from medperf.entities import Server, Cube
 
 
@@ -34,18 +38,19 @@ class Registration:
         self.description = description
         self.location = location
         self.status = "PENDING"
+        self.uid = None
         self.path = None
 
-    @property
-    def uid(self) -> str:
-        """Auto-generates an UID given the user and name of the registration
+    def generate_uid(self, out_path: str) -> str:
+        """Auto-generates an UID based on the contents of the registration
 
+        Args:
+            out_path (str): location of the prepared dataset
         Returns:
             str: generated UID
         """
-        if self.name is None:
-            return None
-        return "_".join([self.name])
+        self.uid = get_folder_sha1(out_path)
+        return self.uid
 
     def __get_stats(self) -> dict:
         """Unwinds the cube output statistics location and retrieves the statistics data
@@ -151,6 +156,7 @@ class Registration:
             int: UID of registered dataset
         """
         dataset_uid = server.upload_dataset(self.todict())
-        server.associate_dataset(dataset_uid, benchmark_uid)
+        # TODO: server must have a field for indicating who initiated the association
+        # server.associate_dataset(dataset_uid, benchmark_uid)
 
-        return
+        return dataset_uid

@@ -1,11 +1,16 @@
-import subprocess
 import yaml
 import os
 from pathlib import Path
 import pexpect
+from yaspin import yaspin
 
 from medperf.entities import Server
-from medperf.utils import get_file_sha1, untar_additional
+from medperf.utils import (
+    get_file_sha1,
+    pretty_error,
+    untar_additional,
+    combine_proc_sp_text,
+)
 
 
 class Cube(object):
@@ -74,7 +79,7 @@ class Cube(object):
             valid_additional = True
         return valid_additional
 
-    def run(self, task: str, **kwargs):
+    def run(self, sp: yaspin, task: str, **kwargs):
         """Executes a given task on the cube instance
 
         Args:
@@ -85,8 +90,12 @@ class Cube(object):
         for k, v in kwargs.items():
             cmd_arg = f"{k}={v}"
             cmd = " ".join([cmd, cmd_arg])
-
-        return pexpect.spawn(cmd)
+        proc = pexpect.spawn(cmd)
+        combine_proc_sp_text(proc, sp)
+        proc.close()
+        if proc.exitstatus != 0:
+            pretty_error("There was an error while executing the cube")
+        return proc
 
     def get_default_output(self, task: str, out_key: str, param_key: str = None) -> str:
         """Returns the output parameter specified in the mlcube.yaml file

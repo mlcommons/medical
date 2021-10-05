@@ -10,7 +10,6 @@ from medperf.utils import (
     init_storage,
     pretty_error,
     cleanup,
-    combine_proc_sp_text,
 )
 from medperf.config import config
 from medperf.entities import Result
@@ -59,10 +58,9 @@ class BenchmarkExecution:
 
             sp.text = "Running model inference on dataset"
             out_path = config["model_output"]
-            proc = model_cube.run(
-                task="infer", data_path=dataset.data_path, output_path=out_path
+            model_cube.run(
+                sp, task="whatever", data_path=dataset.data_path, output_path=out_path
             )
-            combine_proc_sp_text(proc, sp)
             sp.write("> Model execution complete")
 
             cube_root = str(Path(model_cube.cube_path).parent)
@@ -76,13 +74,13 @@ class BenchmarkExecution:
                 out_path, str(benchmark.uid), str(model_uid), str(dataset.data_uid)
             )
             out_path = os.path.join(out_path, "results.yaml")
-            proc = evaluator.run(
+            evaluator.run(
+                sp,
                 task="evaluate",
                 preds_csv=abs_preds_path,
                 labels_csv=labels_path,
                 output_path=out_path,
             )
-            combine_proc_sp_text(proc, sp)
 
             result = Result(out_path, benchmark.uid, dataset.data_uid, model_uid)
             with sp.hidden():

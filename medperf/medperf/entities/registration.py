@@ -10,7 +10,7 @@ from medperf.utils import (
     dict_pretty_print,
     get_folder_sha1,
 )
-from medperf.entities import Server, Cube
+from medperf.entities import Server, Cube, Dataset
 
 
 class Registration:
@@ -145,18 +145,30 @@ class Registration:
         self.path = filepath
         return filepath
 
-    def upload(self, benchmark_uid: int, server: Server) -> int:
+    def upload(self, server: Server) -> int:
         """Uploads the registration information to the server.
 
         Args:
-            benchmark_uid (int): UID of the benchmark used to create the dataset
             server (Server): Instance of the server interface.
         
         Returns:
             int: UID of registered dataset
         """
         dataset_uid = server.upload_dataset(self.todict())
-        # TODO: server must have a field for indicating who initiated the association
-        # server.associate_dataset(dataset_uid, benchmark_uid)
-
         return dataset_uid
+
+    def is_registered(self) -> bool:
+        """Checks if the entry has already been registered as a dataset. Uses the
+        generated UID for comparison.
+
+        Returns:
+            bool: Wether the generated UID is already present in the registered datasets.
+        """
+        if self.uid is None:
+            raise KeyError(
+                "The registration doesn't have an uid yet. Generate it before running this method."
+            )
+
+        dsets = Dataset.all()
+        registered_uids = [dset.registration["generated_uid"] for dset in dsets]
+        return self.uid in registered_uids

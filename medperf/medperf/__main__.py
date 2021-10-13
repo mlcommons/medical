@@ -6,12 +6,15 @@ from medperf import DataPreparation
 from medperf import BenchmarkExecution
 from medperf.entities import Dataset
 from medperf.config import config
+from medperf.utils import clean_except
+from medperf import DatasetBenchmarkAssociation
 
 
 app = typer.Typer()
 
 
 @app.command("prepare")
+@clean_except
 def prepare(
     benchmark_uid: int = typer.Option(
         ..., "--benchmark", "-b", help="UID of the desired benchmark"
@@ -30,11 +33,12 @@ def prepare(
         data_path (str): Location of the data to be prepared.
         labels_path (str): Labels file location.
     """
-    logging.info("Running the 'prepare' command")
-    DataPreparation.run(benchmark_uid, data_path, labels_path)
+    data_uid = DataPreparation.run(benchmark_uid, data_path, labels_path)
+    DatasetBenchmarkAssociation.run(data_uid, benchmark_uid)
 
 
 @app.command("execute")
+@clean_except
 def execute(
     benchmark_uid: int = typer.Option(
         ..., "--benchmark", "-b", help="UID of the desired benchmark"
@@ -53,15 +57,27 @@ def execute(
         data_uid (int): Registered Dataset UID.
         model_uid (int): UID of model to execute.
     """
-    logging.info("Running the 'execute' command")
     BenchmarkExecution.run(benchmark_uid, data_uid, model_uid)
 
 
+@app.command("associate")
+@clean_except
+def associate(
+    data_uid: int = typer.Option(
+        ..., "--data_uid", "-d", help="Registered Dataset UID"
+    ),
+    benchmark_uid: int = typer.Option(
+        ..., "-benchmark_uid", "-b", help="Benchmark UID"
+    ),
+):
+    DatasetBenchmarkAssociation.run(data_uid, benchmark_uid)
+
+
 @app.command("datasets")
+@clean_except
 def datasets():
     """Prints information about prepared datasets living locally
     """
-    logging.info("Running the 'execute' command")
     dsets = Dataset.all()
     headers = ["UID", "Name", "Data Preparation Cube UID"]
     dsets_data = [

@@ -193,9 +193,25 @@ class Server:
 
         Args:
             results_dict (dict): Dictionary containing results information.
+
+        Returns:
+            int: id of the generated results entry
         """
         res = self.__auth_post(f"{self.server_url}/results/", json=results_dict)
         if res.status_code != 201:
             logging.error(res.json())
             pretty_error("Could not upload the results")
         return res.json()["id"]
+
+    def associate_dset_benchmark(self, data_uid: int, benchmark_uid: int):
+        """Create a Dataset Benchmark association
+
+        Args:
+            data_uid (int): Registered dataset UID
+            benchmark_uid (int): Benchmark UID
+        """
+        data = {"dataset": data_uid, "benchmark": benchmark_uid}
+        res = self.__auth_post(f"{self.server_url}/datasets/benchmarks/", json=data)
+        if res.status_code != 201:
+            logging.error(res.json())
+            pretty_error("Could not associate dataset to benchmark")

@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from pexpect import spawn
 import logging
 from yaspin.core import Yaspin
@@ -75,7 +76,6 @@ def get_dsets() -> List[str]:
     Returns:
         List[str]: UIDs of prepared datasets.
     """
-    logging.info("Retrieving all datasets")
     data = config["data_storage"]
     dsets_path = os.path.join(config["storage"], data)
     dsets = next(os.walk(dsets_path))[1]
@@ -180,10 +180,10 @@ def approval_prompt(msg: str) -> bool:
     """
     logging.info("Prompting for user's approval")
     approval = None
-    while approval not in ("Y", "N", "n"):
-        approval = input(msg)
+    while approval is None or approval not in "yn":
+        approval = input(msg.strip() + " ").lower()
     logging.info(f"User answered approval with {approval}")
-    return approval == "Y"
+    return approval == "y"
 
 
 def dict_pretty_print(in_dict: dict):
@@ -223,13 +223,12 @@ def combine_proc_sp_text(proc: spawn, sp: Yaspin) -> str:
         if not byte:
             break
         line = line.decode("utf-8", "ignore")
-        if line and line[-1] == "\n":
+        if line:
             # add to proc_out list for logging
             proc_out += line
-        else:
-            sp.text = (
-                f"{static_text} {Fore.WHITE}{Style.DIM}{line.strip()}{Style.RESET_ALL}"
-            )
+        sp.text = (
+            f"{static_text} {Fore.WHITE}{Style.DIM}{line.strip()}{Style.RESET_ALL}"
+        )
 
     return proc_out
 
@@ -255,3 +254,28 @@ def get_folder_sha1(path: str) -> str:
     for hash in hashes:
         sha1.update(hash.encode("utf-8"))
     return sha1.hexdigest()
+
+
+def clean_except(func: Callable) -> Callable:
+    """Decorator for handling unexpected errors. It allows logging
+    and cleaning the project's directory before throwing the error.
+
+    Args:
+        func (Callable): Function to handle for unexpected errors
+
+    Returns:
+        Callable: Decorated function
+    """
+
+    def wrapper():
+        try:
+            logging.info(f"Running function '{func.__name__}'")
+            func()
+            typer.echo("✅ Done!")
+        except Exception as e:
+            logging.error("An unexpected error occured. Terminating.")
+            logging.error(e)
+            cleanup()
+            raise e
+
+    return wrapper

@@ -66,16 +66,22 @@ class DataPreparation:
 
             sp.text = "Starting registration procedure"
             registration = Registration(cube)
+            registration.generate_uid(out_datapath)
+            if registration.is_registered():
+                pretty_error(
+                    "This dataset has already been registered. Cancelling submission"
+                )
+
             with sp.hidden():
                 approved = registration.request_approval()
                 if approved:
                     registration.retrieve_additional_data()
-                    registration.write(out_path)
-                    registration.generate_uid(out_path)
-                    sp.write("Uploading")
-                    data_uid = registration.upload(benchmark_uid, server)
-                    registration.to_permanent_path(out_path, data_uid)
-                    sp.write("✅ Done!")
                 else:
                     pretty_error("Registration operation cancelled")
+
+            registration.write(out_path)
+            sp.write("Uploading")
+            data_uid = registration.upload(server)
+            registration.to_permanent_path(out_path, data_uid)
             cleanup()
+            return data_uid

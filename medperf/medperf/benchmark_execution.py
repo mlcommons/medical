@@ -11,13 +11,15 @@ from medperf.utils import (
     pretty_error,
     cleanup,
 )
+from medperf.decorators import authenticate
 from medperf.config import config
 from medperf.entities import Result
 
 
 class BenchmarkExecution:
     @staticmethod
-    def run(benchmark_uid: int, data_uid: int, model_uid: int):
+    @authenticate
+    def run(benchmark_uid: int, data_uid: int, model_uid: int, server: Server = None):
         """Benchmark execution flow.
 
         Args:
@@ -26,9 +28,6 @@ class BenchmarkExecution:
             model_uid (int): UID of model to execute
         """
         init_storage()
-        server = Server(config["server"])
-        # TODO: find a better method for handling authentication data
-        server.login("testdataowner", "test")
 
         # Ensure user can access the specified benchmark
         if not server.authorized_by_role(benchmark_uid, "DATA_OWNER"):

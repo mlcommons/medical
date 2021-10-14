@@ -1,4 +1,3 @@
-from collections.abc import Callable
 from pexpect import spawn
 import logging
 from yaspin.core import Yaspin
@@ -255,27 +254,3 @@ def get_folder_sha1(path: str) -> str:
         sha1.update(hash.encode("utf-8"))
     return sha1.hexdigest()
 
-
-def clean_except(func: Callable) -> Callable:
-    """Decorator for handling unexpected errors. It allows logging
-    and cleaning the project's directory before throwing the error.
-
-    Args:
-        func (Callable): Function to handle for unexpected errors
-
-    Returns:
-        Callable: Decorated function
-    """
-
-    def wrapper():
-        try:
-            logging.info(f"Running function '{func.__name__}'")
-            func()
-            typer.echo("✅ Done!")
-        except Exception as e:
-            logging.error("An unexpected error occured. Terminating.")
-            logging.error(e)
-            cleanup()
-            raise e
-
-    return wrapper

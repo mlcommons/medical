@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 
 home = str(Path.home())
-storage = os.path.join(home, "medperf")
+storage = os.path.join(home, ".medperf")
 config = {
     "version": "0.0.0",
     "server": "http://localhost:8000",
@@ -12,6 +12,7 @@ config = {
     "data_storage": os.path.join(storage, "data"),
     "cubes_storage": os.path.join(storage, "cubes"),
     "results_storage": os.path.join(storage, "results"),
+    "credentials_path": os.path.join(storage, "credentials"),
     "model_output": "outputs/predictions.csv",
     "workspace_path": "workspace",
     "cube_filename": "mlcube.yaml",

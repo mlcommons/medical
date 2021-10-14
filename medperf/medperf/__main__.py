@@ -1,20 +1,42 @@
+import os
+import stat
 import typer
 import logging
-from tabulate import tabulate
+import getpass
 
 from medperf import DataPreparation
 from medperf import BenchmarkExecution
-from medperf.entities import Dataset
-from medperf.config import config
-from medperf.utils import clean_except
 from medperf import DatasetBenchmarkAssociation
+from medperf.entities import Server
+from medperf.config import config
+from medperf.decorators import clean_except
+from medperf.commands import dataset
 
 
 app = typer.Typer()
+app.add_typer(dataset.app, name="dataset")
 
 
-@app.command("prepare")
+@app.command("login")
 @clean_except
+def login():
+    cred_path = config["credentials_path"]
+    user = input("username: ")
+    pwd = getpass.getpass("password: ")
+    server = Server(config["server"])
+    server.login(user, pwd)
+    token = server.token
+
+    if os.path.exists(cred_path):
+        os.remove(cred_path)
+    with open(cred_path, "w") as f:
+        f.write(token)
+
+    os.chmod(cred_path, stat.S_IREAD)
+
+
+@clean_except
+@app.command("prepare")
 def prepare(
     benchmark_uid: int = typer.Option(
         ..., "--benchmark", "-b", help="UID of the desired benchmark"
@@ -37,8 +59,8 @@ def prepare(
     DatasetBenchmarkAssociation.run(data_uid, benchmark_uid)
 
 
-@app.command("execute")
 @clean_except
+@app.command("execute")
 def execute(
     benchmark_uid: int = typer.Option(
         ..., "--benchmark", "-b", help="UID of the desired benchmark"
@@ -73,28 +95,8 @@ def associate(
     DatasetBenchmarkAssociation.run(data_uid, benchmark_uid)
 
 
-@app.command("datasets")
-@clean_except
-def datasets():
-    """Prints information about prepared datasets living locally
-    """
-    dsets = Dataset.all()
-    headers = ["UID", "Name", "Data Preparation Cube UID"]
-    dsets_data = [
-        [dset.data_uid, dset.name, dset.preparation_cube_uid] for dset in dsets
-    ]
-    tab = tabulate(dsets_data, headers=headers)
-    print(tab)
-
-
 @app.callback()
 def main(log: str = "INFO", log_file: str = config["log_file"]):
-    """Manage global configuration and options, like logging or shared initial prints
-
-    Args:
-        log (str, optional): Logging level to use. Defaults to "INFO".
-        log_file (str, optional): File to use for logging. Defaults to the path defined in config.
-    """
     log = log.upper()
     log_lvl = getattr(logging, log)
     log_fmt = "%(asctime)s | %(levelname)s: %(message)s"

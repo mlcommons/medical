@@ -4,6 +4,7 @@ from yaspin import yaspin
 
 from medperf.entities import Benchmark, Cube, Registration, Server
 from medperf.config import config
+from medperf.decorators import authenticate
 from medperf.utils import (
     check_cube_validity,
     generate_tmp_datapath,
@@ -15,7 +16,8 @@ from medperf.utils import (
 
 class DataPreparation:
     @staticmethod
-    def run(benchmark_uid: str, data_path: str, labels_path: str):
+    @authenticate
+    def run(benchmark_uid: str, data_path: str, labels_path: str, server: Server):
         """Data Preparation flow.
 
         Args:
@@ -23,9 +25,6 @@ class DataPreparation:
             data_path (str): Location of the data to be prepared.
             labels_path (str): Labels file location.
         """
-        server = Server(config["server"])
-        # TODO: find a way to store authentication credentials
-        server.login("testdataowner", "test")
         data_path = os.path.abspath(data_path)
         labels_path = os.path.abspath(labels_path)
         out_path, out_datapath = generate_tmp_datapath()

@@ -7,9 +7,9 @@ from medperf.enums import Role
 
 
 class Server:
-    def __init__(self, server_url: str):
+    def __init__(self, server_url: str, token=None):
         self.server_url = server_url
-        self.token = None
+        self.token = token
 
     def login(self, username: str, password: str):
         """Authenticates the user with the server. Required for most endpoints
@@ -176,11 +176,14 @@ class Server:
         open(filepath, "wb+").write(res.content)
         return filepath
 
-    def upload_dataset(self, reg_dict: dict):
+    def upload_dataset(self, reg_dict: dict) -> int:
         """Uploads registration data to the server, under the sha name of the file.
 
         Args:
             reg_dict (dict): Dictionary containing registration information.
+
+        Returns:
+            int: id of the created dataset registration.
         """
         res = self.__auth_post(f"{self.server_url}/datasets/", json=reg_dict)
         if res.status_code != 201:

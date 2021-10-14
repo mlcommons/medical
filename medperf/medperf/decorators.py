@@ -23,7 +23,6 @@ def clean_except(func: Callable) -> Callable:
         try:
             logging.info(f"Running function '{func.__name__}'")
             func()
-            typer.echo("✅ Done!")
         except Exception as e:
             logging.error("An unexpected error occured. Terminating.")
             logging.error(e)

@@ -58,6 +58,7 @@ def prepare(
     """
     data_uid = DataPreparation.run(benchmark_uid, data_path, labels_path)
     DatasetBenchmarkAssociation.run(data_uid, benchmark_uid)
+    typer.echo("✅ Done!")
 
 
 @clean_except
@@ -81,6 +82,7 @@ def execute(
         model_uid (int): UID of model to execute.
     """
     BenchmarkExecution.run(benchmark_uid, data_uid, model_uid)
+    typer.echo("✅ Done!")
 
 
 @app.command("associate")
@@ -94,6 +96,7 @@ def associate(
     ),
 ):
     DatasetBenchmarkAssociation.run(data_uid, benchmark_uid)
+    typer.echo("✅ Done!")
 
 
 @app.callback()
@@ -117,7 +120,7 @@ def ls():
         [dset.data_uid, dset.name, dset.preparation_cube_uid] for dset in dsets
     ]
     tab = tabulate(dsets_data, headers=headers)
-    print(tab)
+    typer.echo(tab)
 
 
 if __name__ == "__main__":

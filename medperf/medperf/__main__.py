@@ -3,11 +3,12 @@ import stat
 import typer
 import logging
 import getpass
+from tabulate import tabulate
 
 from medperf import DataPreparation
 from medperf import BenchmarkExecution
 from medperf import DatasetBenchmarkAssociation
-from medperf.entities import Server
+from medperf.entities import Server, Dataset
 from medperf.config import config
 from medperf.decorators import clean_except
 from medperf.commands import dataset
@@ -103,6 +104,20 @@ def main(log: str = "INFO", log_file: str = config["log_file"]):
     logging.basicConfig(filename=log_file, level=log_lvl, format=log_fmt)
     logging.info(f"Running MedPerf v{config['version']} on {log} logging level")
     typer.echo(f"MedPerf {config['version']}")
+
+
+@app.command("datasets")
+@clean_except
+def ls():
+    """Lists all local datasets
+	"""
+    dsets = Dataset.all()
+    headers = ["UID", "Name", "Data Preparation Cube UID"]
+    dsets_data = [
+        [dset.data_uid, dset.name, dset.preparation_cube_uid] for dset in dsets
+    ]
+    tab = tabulate(dsets_data, headers=headers)
+    print(tab)
 
 
 if __name__ == "__main__":

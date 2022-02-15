@@ -93,6 +93,8 @@ def prepare(
     parameters_file: str = typer.Option(..., "--parameters_file"),
     output_path: str = typer.Option(..., "--output_path"),
 ):
+    print("DEBUGGING TEST")
+    print(os.listdir("/mlcube_io1/")) 
     PrepareTask.run(data_path, labels_path, parameters_file, output_path)
 
 

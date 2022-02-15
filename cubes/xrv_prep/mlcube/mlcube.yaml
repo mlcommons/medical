@@ -17,11 +17,11 @@ docker:
 tasks:
   prepare:
     parameters:
-      inputs: {data_path: NIH/images/, labels_path: NIH/Data_Entry_2017_v2020.csv, parameters_file: parameters.yaml}
+      inputs: {data_path: NIH/images/, labels_path: NIH/Data_Entry_2017_v2020.csv, parameters_file: {type: file, default: parameters.yaml}}
       outputs: {output_path: data/}
   sanity_check:
     parameters:
-      inputs: {data_path: data/, parameters_file: parameters.yaml}
+      inputs: {data_path: data/, parameters_file: {type: file, default: parameters.yaml}}
   statistics:
     parameters:
       inputs: {data_path: data/, parameters_file: parameters.yaml}

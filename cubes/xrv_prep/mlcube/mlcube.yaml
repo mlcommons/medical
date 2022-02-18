@@ -21,7 +21,7 @@ tasks:
       outputs: {output_path: data/}
   sanity_check:
     parameters:
-      inputs: {data_path: data/, parameters_file: parameters.yaml}
+      inputs: {data_path: data/, parameters_file: {type: file, default: parameters.yaml}}
   statistics:
     parameters:
       inputs: {data_path: data/, parameters_file: parameters.yaml}

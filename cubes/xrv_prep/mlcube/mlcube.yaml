@@ -8,7 +8,7 @@ platform:
 
 docker:
   # Image name.
-  image: mlcommons/xrv-prep:0.0.1
+  image: mlcommons/xrv-prep:0.0.2
   # Docker build context relative to $MLCUBE_ROOT. Default is `build`.
   build_context: "../project"
   # Docker file name within docker build context, default is `Dockerfile`.
@@ -17,7 +17,7 @@ docker:
 tasks:
   prepare:
     parameters:
-      inputs: {data_path: NIH/images/, labels_path: NIH/Data_Entry_2017_v2020.csv, parameters_file: parameters.yaml}
+      inputs: {data_path: NIH/images/, labels_path: NIH, parameters_file: parameters.yaml}
       outputs: {output_path: data/}
   sanity_check:
     parameters:

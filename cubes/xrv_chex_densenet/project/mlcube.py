@@ -1,3 +1,4 @@
+import os
 import typer
 import subprocess
 
@@ -38,6 +39,7 @@ def infer(
     weights: str = typer.Option(..., "--weights"),
     out_path: str = typer.Option(..., "--output_path"),
 ):
+    out_path = os.path.join(out_path, "predictions.csv")
     InferTask.run(data_path, params_file, weights, out_path)
 
 

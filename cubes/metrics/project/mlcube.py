@@ -27,11 +27,13 @@ class EvaluateTask(object):
 
 @app.command("evaluate")
 def evaluate(
-    labels_csv: str = typer.Option(..., "--labels_csv"),
-    preds_csv: str = typer.Option(..., "--preds_csv"),
+    labels: str = typer.Option(..., "--labels"),
+    predictions: str = typer.Option(..., "--predictions"),
     parameters_file: str = typer.Option(..., "--parameters_file"),
     output_path: str = typer.Option(..., "--output_path"),
 ):
+    labels_csv = os.path.join(labels, "labels.csv")
+    preds_csv = os.path.join(predictions, "predictions.csv")
     EvaluateTask.run(labels_csv, preds_csv, parameters_file, output_path)
 
 

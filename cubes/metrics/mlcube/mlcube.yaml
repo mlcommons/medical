@@ -8,7 +8,7 @@ platform:
 
 docker:
   # Image name.
-  image: mlcommons/metrics:0.0.1
+  image: mlcommons/metrics:0.0.2
   # Docker build context relative to $MLCUBE_ROOT. Default is `build`.
   build_context: "../project"
   # Docker file name within docker build context, default is `Dockerfile`.
@@ -18,5 +18,5 @@ tasks:
   evaluate:
   # Executes a number of metrics specified by the params file
     parameters:
-      inputs: {preds_csv: predictions.csv, labels_csv: labels.csv, parameters_file: parameters.yaml}
+      inputs: {predictions: predictions, labels: labels, parameters_file: parameters.yaml}
       outputs: {output_path: {type: "file", default: "results.yaml"}}

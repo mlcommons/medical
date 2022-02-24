@@ -32,7 +32,7 @@ def evaluate(
     parameters_file: str = typer.Option(..., "--parameters_file"),
     output_path: str = typer.Option(..., "--output_path"),
 ):
-    labels_csv = os.path.join(labels, "labels.csv")
+    labels_csv = os.path.join(labels, "data.csv")
     preds_csv = os.path.join(predictions, "predictions.csv")
     EvaluateTask.run(labels_csv, preds_csv, parameters_file, output_path)
 

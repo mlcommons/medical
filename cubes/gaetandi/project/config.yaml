@@ -1,0 +1,26 @@
+# Dataset parameters:
+data_file: "data.csv"
+
+# Neural network parameters:
+nnClassCount: 14  # dimension of the output
+
+# Parameters related to image transforms: size of the down-scaled image, cropped image
+imgtransResize: [320, 320]
+imgtransCrop: 224
+
+# Class names
+class_names: 
+ - No Finding
+ - Enlarged Cardiomediastinum
+ - Cardiomegaly
+ - Lung Opacity
+ - Lung Lesion
+ - Edema
+ - Consolidation
+ - Pneumonia
+ - Atelectasis
+ - Pneumothorax
+ - Pleural Effusion
+ - Pleural Other
+ - Fracture
+ - Support Devices

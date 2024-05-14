@@ -1,138 +1,126 @@
 import os
-import yaml
+import stat
 import typer
-import requests
-from pathlib import Path
-from yaspin import yaspin
-import subprocess
+import logging
+import getpass
+from tabulate import tabulate
 
-from .config import config
-from .server import Server
-from .utils import get_file_sha1, init_storage, cleanup, pretty_error
+from medperf import DataPreparation
+from medperf import BenchmarkExecution
+from medperf import DatasetBenchmarkAssociation
+from medperf.entities import Server, Dataset
+from medperf.config import config
+from medperf.decorators import clean_except
+from medperf.commands import dataset
+
 
 app = typer.Typer()
+app.add_typer(dataset.app, name="dataset")
 
 
+@app.command("login")
+@clean_except
+def login():
+    cred_path = config["credentials_path"]
+    user = input("username: ")
+    pwd = getpass.getpass("password: ")
+    server = Server(config["server"])
+    server.login(user, pwd)
+    token = server.token
+
+    if os.path.exists(cred_path):
+        os.remove(cred_path)
+    with open(cred_path, "w") as f:
+        f.write(token)
+
+    os.chmod(cred_path, stat.S_IREAD)
+
+
+@clean_except
 @app.command("prepare")
 def prepare(
-    benchmark_uid: str = typer.Option(
+    benchmark_uid: int = typer.Option(
         ..., "--benchmark", "-b", help="UID of the desired benchmark"
     ),
     data_path: str = typer.Option(
         ..., "--data_path", "-d", help="Location of the data to be prepared"
     ),
+    labels_path: str = typer.Option(
+        ..., "--labels_path", "-l", help="Labels file location"
+    ),
 ):
-    workspace_path = str(Path(data_path).parent)
-    server = Server(config["server"])
-    init_storage()
-    typer.echo("MedPerf 0.0.0")
-    benchmark = server.get_benchmark(benchmark_uid)
-    typer.echo(f"Benchmark: {benchmark['name']}")
+    """Runs the Data preparation step for a specified benchmark and raw dataset
 
-    cube_uid = benchmark["preprocessor"]
-    with yaspin(
-        text=f"Retrieving data preparation cube: '{cube_uid}'", color="green"
-    ) as sp:
-        prep_meta = server.get_cube_metadata(cube_uid)
-        cube_path = server.get_cube(prep_meta["url"], cube_uid)
-        sp.write("> Preparation cube download complete")
-
-        sp.text = "Checking cube MD5 hash..."
-        if get_file_sha1(cube_path) != prep_meta["sha1"]:
-            pretty_error("MD5 hash doesn't match")
-        sp.write("> Cube MD5 hash check complete")
-
-        if prep_meta["includes_parameters"]:
-            sp.text = "Downloading parameters file..."
-            params_path = server.get_cube_params(cube_uid, workspace_path)
-            sp.write("> Paramaters file download complete")
-
-        sp.text = "Running Cube"
-        execute_cube(
-            cube_path, workspace=workspace_path, task="preprocess", data_path=data_path
-        )
-        sp.write("> Cube execution complete")
-
-        sp.text = "Running sanity checks"
-        execute_cube(cube_path, workspace=workspace_path, task="sanity_check")
-        sp.write("> Sanity checks complete")
-
-        sp.text = "Generating statistics"
-        execute_cube(cube_path, workspace=workspace_path, task="statistics")
-        sp.write("> Statistics complete")
-
-        sp.text = "Starting registration procedure"
-        reg_path = generate_registration_info(
-            cube_path, workspace_path, params_path, cube_uid
-        )
-    approval = registration_approval(reg_path)
-    if approval:
-        typer.echo("Uploading")
-        server.upload_dataset(reg_path)
-        typer.echo("✅ Done!")
-    else:
-        pretty_error("Registration operation cancelled")
-    cleanup()
+    Args:
+        benchmark_uid (int): UID of the desired benchmark.
+        data_path (str): Location of the data to be prepared.
+        labels_path (str): Labels file location.
+    """
+    data_uid = DataPreparation.run(benchmark_uid, data_path, labels_path)
+    DatasetBenchmarkAssociation.run(data_uid, benchmark_uid)
+    typer.echo("✅ Done!")
 
 
-def execute_cube(cube: str, **kwargs):
-    cmd = f"mlcube run --mlcube={cube}"
-    for k, v in kwargs.items():
-        cmd_arg = f"--{k}={v}"
-        cmd = " ".join([cmd, cmd_arg])
+@clean_except
+@app.command("execute")
+def execute(
+    benchmark_uid: int = typer.Option(
+        ..., "--benchmark", "-b", help="UID of the desired benchmark"
+    ),
+    data_uid: int = typer.Option(
+        ..., "--data_uid", "-d", help="Registered Dataset UID"
+    ),
+    model_uid: int = typer.Option(
+        ..., "--model_uid", "-m", help="UID of model to execute"
+    ),
+):
+    """Runs the benchmark execution step for a given benchmark, prepared dataset and model
 
-    splitted_cmd = cmd.split()
-
-    process = subprocess.Popen(splitted_cmd, cwd=".")
-    process.wait()
-
-
-def generate_registration_info(cube_path, workspace_path, params_path, cube_uid):
-    with open(cube_path, "r") as f:
-        cube = yaml.full_load(f)
-
-    with open(params_path, "r") as f:
-        params = yaml.full_load(f)
-
-    out_path = cube["tasks"]["statistics"]["parameters"]["outputs"]["out_path"]
-    stats_path = os.path.join(workspace_path, out_path, params["output_statsfile"])
-
-    with open(stats_path, "r") as f:
-        stats = yaml.full_load(f)
-
-    params_sha1 = get_file_sha1(params_path)
-    registration = {
-        "user_uid": "mock user",
-        "cube uid": cube_uid,
-        "parameters sha1": params_sha1,
-        "metadata": stats,
-    }
-
-    out_path = os.path.join(config["tmp_storage"], cube_uid, "registration.yaml")
-
-    with open(out_path, "w") as f:
-        yaml.dump(registration, f)
-
-    return out_path
+    Args:
+        benchmark_uid (int): UID of the desired benchmark.
+        data_uid (int): Registered Dataset UID.
+        model_uid (int): UID of model to execute.
+    """
+    BenchmarkExecution.run(benchmark_uid, data_uid, model_uid)
+    typer.echo("✅ Done!")
 
 
-def registration_approval(registration_path: str) -> bool:
+@app.command("associate")
+@clean_except
+def associate(
+    data_uid: int = typer.Option(
+        ..., "--data_uid", "-d", help="Registered Dataset UID"
+    ),
+    benchmark_uid: int = typer.Option(
+        ..., "-benchmark_uid", "-b", help="Benchmark UID"
+    ),
+):
+    DatasetBenchmarkAssociation.run(data_uid, benchmark_uid)
+    typer.echo("✅ Done!")
 
-    typer.echo()
-    typer.echo("=" * 20)
-    with open(registration_path, "r") as f:
-        typer.echo(f.read())
-    typer.echo("=" * 20)
-    typer.echo(
-        "Above is the information and statistics that will be registered to the database"
-    )
-    approval = None
-    while approval not in ["Y", "N", "n"]:
-        approval = input(
-            "Do you approve the registration of the presented data to the MLCommons server? [Y/n] "
-        )
 
-    return approval == "Y"
+@app.callback()
+def main(log: str = "INFO", log_file: str = config["log_file"]):
+    log = log.upper()
+    log_lvl = getattr(logging, log)
+    log_fmt = "%(asctime)s | %(levelname)s: %(message)s"
+    logging.basicConfig(filename=log_file, level=log_lvl, format=log_fmt)
+    logging.info(f"Running MedPerf v{config['version']} on {log} logging level")
+    typer.echo(f"MedPerf {config['version']}")
+
+
+@app.command("datasets")
+@clean_except
+def ls():
+    """Lists all local datasets
+	"""
+    dsets = Dataset.all()
+    headers = ["UID", "Name", "Data Preparation Cube UID"]
+    dsets_data = [
+        [dset.data_uid, dset.name, dset.preparation_cube_uid] for dset in dsets
+    ]
+    tab = tabulate(dsets_data, headers=headers)
+    typer.echo(tab)
 
 
 if __name__ == "__main__":
